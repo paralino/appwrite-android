@@ -300,7 +300,8 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
         }
 
         private fun handleResponseError(message: RealtimeResponse) {
-            throw message.data?.jsonCast<AppwriteException>() ?: RuntimeException("Data is not present")
+//            throw message.data?.jsonCast<AppwriteException>() ?: RuntimeException("Data is not present")
+            closeSocket()
         }
 
         private suspend fun handleResponseEvent(message: RealtimeResponse) {
