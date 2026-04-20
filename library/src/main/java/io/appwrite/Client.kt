@@ -58,7 +58,7 @@ class Client @JvmOverloads constructor(
 
     private val job = Job()
 
-    internal lateinit var http: OkHttpClient
+    lateinit var http: OkHttpClient
 
     internal val headers: MutableMap<String, String>
 
