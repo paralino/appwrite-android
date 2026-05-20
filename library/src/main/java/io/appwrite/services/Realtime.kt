@@ -95,6 +95,7 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
     private fun closeSocket() {
         stopHeartbeat()
         socket?.close(RealtimeCode.POLICY_VIOLATION.value, null)
+        socket = null
     }
 
     private fun sendUnsubscribeMessage(subscriptionIds: List<String>) {
