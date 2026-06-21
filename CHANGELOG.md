@@ -1,10 +1,37 @@
 # Change Log
 
+## 25.1.0
+
+* Added: Email metadata fields to `User` (`emailCanonical`, `emailIsFree`, `emailIsDisposable`, `emailIsCorporate`, `emailIsCanonical`).
+* Added: `Membership.userAccessedAt` field.
+* Updated: Requests now send an explicit `accept` header matching each endpoint's response type.
+
+## 25.0.0
+
+* Breaking: `avatars.getScreenshot` `theme` parameter now uses the `BrowserTheme` enum
+* Breaking: Removed generic type parameters from `presences` service methods
+* Replaced: `BrowserTheme` enum
+* Updated: `Presence` model is now concrete and adds a `metadata` field
+
+## 24.1.1
+
+* Fixed: Removed `Advisor` service and `Insight`, `InsightCTA`, `InsightList`, `Report`, `ReportList` models (admin-only endpoints, not intended for client SDKs)
+* Added: `sizeActual` field to `File` model
+
+## 24.1.0
+
+* Added: Realtime `presences` channel and `RealtimePresence` types for presence subscriptions
+* Added: `Advisor` and `Presences` services
+* Added: `Insight`, `Presence`, and `Report` models with list variants
+* Added: `fusionauth`, `keycloak`, and `kick` providers to `OAuthProvider` enum
+* Updated: Migrated Gradle build files to Kotlin DSL (`build.gradle.kts`)
+* Updated: `X-Appwrite-Response-Format` header to `1.9.5`
+
 ## 24.0.0
 
-* Breaking: Added `unsubscribe()`, `update()`, and `close()` for Realtime subscription lifecycle.
-* Added: Added `userPhone` to the `Membership` model.
-* Updated: Updated `X-Appwrite-Response-Format` header to `1.9.2`.
+* Breaking: Added `unsubscribe()`, `update()`, and `close()` to Realtime subscriptions
+* Added: Added `userPhone` field to `Membership` model
+* Updated: Updated `X-Appwrite-Response-Format` header to `1.9.2`
 
 ## 23.1.0
 

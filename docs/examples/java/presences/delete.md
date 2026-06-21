@@ -1,17 +1,16 @@
 ```java
 import io.appwrite.Client;
 import io.appwrite.coroutines.CoroutineCallback;
-import io.appwrite.services.Account;
+import io.appwrite.services.Presences;
 
 Client client = new Client(context)
     .setEndpoint("https://<REGION>.cloud.appwrite.io/v1") // Your API Endpoint
     .setProject("<YOUR_PROJECT_ID>"); // Your project ID
 
-Account account = new Account(client);
+Presences presences = new Presences(client);
 
-account.updatePassword(
-    "", // password 
-    "<OLD_PASSWORD>", // oldPassword (optional)
+presences.delete(
+    "<PRESENCE_ID>", // presenceId 
     new CoroutineCallback<>((result, error) -> {
         if (error != null) {
             error.printStackTrace();

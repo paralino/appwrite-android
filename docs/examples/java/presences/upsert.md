@@ -1,17 +1,22 @@
 ```java
 import io.appwrite.Client;
 import io.appwrite.coroutines.CoroutineCallback;
-import io.appwrite.services.Account;
+import io.appwrite.Permission;
+import io.appwrite.Role;
+import io.appwrite.services.Presences;
 
 Client client = new Client(context)
     .setEndpoint("https://<REGION>.cloud.appwrite.io/v1") // Your API Endpoint
     .setProject("<YOUR_PROJECT_ID>"); // Your project ID
 
-Account account = new Account(client);
+Presences presences = new Presences(client);
 
-account.updatePassword(
-    "", // password 
-    "<OLD_PASSWORD>", // oldPassword (optional)
+presences.upsert(
+    "<PRESENCE_ID>", // presenceId 
+    "<STATUS>", // status 
+    List.of(Permission.read(Role.any())), // permissions (optional)
+    "2020-10-15T06:38:00.000+00:00", // expiresAt (optional)
+    Map.of("a", "b"), // metadata (optional)
     new CoroutineCallback<>((result, error) -> {
         if (error != null) {
             error.printStackTrace();
