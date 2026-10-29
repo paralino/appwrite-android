@@ -49,8 +49,74 @@ data class Locale(
     @SerializedName("currency")
     val currency: String,
 
+    /**
+     * City
+     */
+    @SerializedName("city")
+    var city: String?,
+
+    /**
+     * Name of timezone
+     */
+    @SerializedName("timeZone")
+    var timeZone: String?,
+
+    /**
+     * Postal code
+     */
+    @SerializedName("postalCode")
+    var postalCode: String?,
+
+    /**
+     * Latitude
+     */
+    @SerializedName("latitude")
+    var latitude: Double?,
+
+    /**
+     * Longitude
+     */
+    @SerializedName("longitude")
+    var longitude: Double?,
+
+    /**
+     * Autonomous System Number (ASN) of the IP
+     */
+    @SerializedName("autonomousSystemNumber")
+    var autonomousSystemNumber: String?,
+
+    /**
+     * Organization that owns the ASN
+     */
+    @SerializedName("autonomousSystemOrganization")
+    var autonomousSystemOrganization: String?,
+
+    /**
+     * Internet service provider of the IP
+     */
+    @SerializedName("isp")
+    var isp: String?,
+
+    /**
+     * Connection type of the IP (e.g. cable, cellular, corporate)
+     */
+    @SerializedName("connectionType")
+    var connectionType: String?,
+
+    /**
+     * User type classification of the IP (e.g. residential, business, hosting)
+     */
+    @SerializedName("connectionUsageType")
+    var connectionUsageType: String?,
+
+    /**
+     * Registered organization of the IP
+     */
+    @SerializedName("connectionOrganization")
+    var connectionOrganization: String?,
+
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "ip" to ip as Any,
         "countryCode" to countryCode as Any,
         "country" to country as Any,
@@ -58,21 +124,42 @@ data class Locale(
         "continent" to continent as Any,
         "eu" to eu as Any,
         "currency" to currency as Any,
+        "city" to city as Any?,
+        "timeZone" to timeZone as Any?,
+        "postalCode" to postalCode as Any?,
+        "latitude" to latitude as Any?,
+        "longitude" to longitude as Any?,
+        "autonomousSystemNumber" to autonomousSystemNumber as Any?,
+        "autonomousSystemOrganization" to autonomousSystemOrganization as Any?,
+        "isp" to isp as Any?,
+        "connectionType" to connectionType as Any?,
+        "connectionUsageType" to connectionUsageType as Any?,
+        "connectionOrganization" to connectionOrganization as Any?,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Locale(
-            ip = map["ip"] as String,
-            countryCode = map["countryCode"] as String,
-            country = map["country"] as String,
-            continentCode = map["continentCode"] as String,
-            continent = map["continent"] as String,
-            eu = map["eu"] as Boolean,
-            currency = map["currency"] as String,
+            ip = (if (map.containsKey("ip")) map["ip"] else "") as String,
+            countryCode = (if (map.containsKey("countryCode")) map["countryCode"] else "") as String,
+            country = (if (map.containsKey("country")) map["country"] else "") as String,
+            continentCode = (if (map.containsKey("continentCode")) map["continentCode"] else "") as String,
+            continent = (if (map.containsKey("continent")) map["continent"] else "") as String,
+            eu = (if (map.containsKey("eu")) map["eu"] else false) as Boolean,
+            currency = (if (map.containsKey("currency")) map["currency"] else "") as String,
+            city = map["city"] as? String,
+            timeZone = map["timeZone"] as? String,
+            postalCode = map["postalCode"] as? String,
+            latitude = (map["latitude"] as? Number)?.toDouble(),
+            longitude = (map["longitude"] as? Number)?.toDouble(),
+            autonomousSystemNumber = map["autonomousSystemNumber"] as? String,
+            autonomousSystemOrganization = map["autonomousSystemOrganization"] as? String,
+            isp = map["isp"] as? String,
+            connectionType = map["connectionType"] as? String,
+            connectionUsageType = map["connectionUsageType"] as? String,
+            connectionOrganization = map["connectionOrganization"] as? String,
         )
     }
 }

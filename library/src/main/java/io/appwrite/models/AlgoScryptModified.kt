@@ -32,7 +32,7 @@ data class AlgoScryptModified(
     val signerKey: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "type" to type as Any,
         "salt" to salt as Any,
         "saltSeparator" to saltSeparator as Any,
@@ -40,15 +40,14 @@ data class AlgoScryptModified(
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = AlgoScryptModified(
-            type = map["type"] as String,
-            salt = map["salt"] as String,
-            saltSeparator = map["saltSeparator"] as String,
-            signerKey = map["signerKey"] as String,
+            type = (if (map.containsKey("type")) map["type"] else "scryptMod") as String,
+            salt = (if (map.containsKey("salt")) map["salt"] else "") as String,
+            saltSeparator = (if (map.containsKey("saltSeparator")) map["saltSeparator"] else "") as String,
+            signerKey = (if (map.containsKey("signerKey")) map["signerKey"] else "") as String,
         )
     }
 }

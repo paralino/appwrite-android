@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,7 +13,6 @@ import java.io.File
  * The Messaging service allows you to send messages to any provider type (SMTP, push notification, SMS, etc.).
  */
 class Messaging(client: Client) : Service(client) {
-
     /**
      * Create a new subscriber.
      *
@@ -22,15 +21,18 @@ class Messaging(client: Client) : Service(client) {
      * @param targetId Target ID. The target ID to link to the specified Topic ID.
      * @return [io.appwrite.models.Subscriber]
      */
+    @Throws(AppwriteException::class)
     suspend fun createSubscriber(
         topicId: String,
         subscriberId: String,
         targetId: String,
     ): io.appwrite.models.Subscriber {
+        if (topicId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"topicId\"")
+        }
         val apiPath = ("/messaging/topics/{topicId}/subscribers"
-            .replace("{topicId}", topicId)
+            .replace("{topicId}", Client.encodePath(topicId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "subscriberId" to subscriberId,
             "targetId" to targetId,
@@ -54,7 +56,6 @@ class Messaging(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Delete a subscriber by its unique ID.
      *
@@ -62,20 +63,26 @@ class Messaging(client: Client) : Service(client) {
      * @param subscriberId Subscriber ID.
      * @return [Any]
      */
+    @Throws(AppwriteException::class)
     suspend fun deleteSubscriber(
         topicId: String,
         subscriberId: String,
     ): Any {
+        if (topicId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"topicId\"")
+        }
+        if (subscriberId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"subscriberId\"")
+        }
         val apiPath = ("/messaging/topics/{topicId}/subscribers/{subscriberId}"
-            .replace("{topicId}", topicId)
-            .replace("{subscriberId}", subscriberId)
+            .replace("{topicId}", Client.encodePath(topicId))
+            .replace("{subscriberId}", Client.encodePath(subscriberId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "content-type" to "application/json",
+            "accept" to "application/json",
         )
         return client.call(
             "DELETE",
@@ -85,6 +92,4 @@ class Messaging(client: Client) : Service(client) {
             responseType = Any::class.java,
         )
     }
-
-
 }

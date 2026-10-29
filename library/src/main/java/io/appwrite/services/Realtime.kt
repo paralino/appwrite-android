@@ -1,10 +1,11 @@
 package io.appwrite.services
 
-import io.appwrite.Service
-import io.appwrite.Client
+import android.util.Log
 import io.appwrite.Channel
+import io.appwrite.Client
 import io.appwrite.ID
 import io.appwrite.Query
+import io.appwrite.Service
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.forEachAsync
 import io.appwrite.extensions.fromJson
@@ -18,11 +19,96 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
-import android.util.Log
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Realtime wrappers share one connection per [Client]. Separate clients keep their
+ * sockets, subscriptions and lifecycle callbacks independent.
+ */
 class Realtime(client: Client) : Service(client), CoroutineScope {
+
+    private val connection = client.realtime
+    private val job = Job()
+
+    // Cancelling one wrapper must not cancel the client's shared connection scope.
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    fun onError(callback: (error: Throwable?, statusCode: Int?) -> Unit) {
+        connection.onError(callback)
+    }
+
+    fun onClose(callback: () -> Unit) {
+        connection.onClose(callback)
+    }
+
+    fun onOpen(callback: () -> Unit) {
+        connection.onOpen(callback)
+    }
+
+    /** Close this client's connection and remove all of its subscriptions and callbacks. */
+    fun disconnect() {
+        connection.disconnect()
+    }
+
+    /**
+     * Fire-and-forget presence upsert. Records the latest payload in state so
+     * that — if the WebSocket isn't open yet, or later reconnects — the most
+     * recent presence is automatically (re)sent on the next `connected` event.
+     * When the socket is already open, the frame is sent immediately.
+     *
+     * @param status Presence status (required).
+     * @param presenceId Presence ID (required).
+     * @param permissions Optional permission list to attach to the presence document.
+     * @param metadata Optional metadata payload.
+     */
+    fun upsertPresence(
+        status: String,
+        presenceId: String,
+        permissions: List<String>? = null,
+        metadata: Map<String, Any>? = null,
+    ) {
+        connection.upsertPresence(status, presenceId, permissions, metadata)
+    }
+
+    fun subscribe(
+        vararg channels: Channel<*>,
+        callback: (RealtimeResponseEvent<Any>) -> Unit,
+    ) = connection.subscribe(*channels, callback = callback)
+
+    fun subscribe(
+        vararg channels: String,
+        callback: (RealtimeResponseEvent<Any>) -> Unit,
+    ) = connection.subscribe(*channels, callback = callback)
+
+    fun <T> subscribe(
+        vararg channels: Channel<*>,
+        payloadType: Class<T>,
+        queries: Set<String> = emptySet(),
+        callback: (RealtimeResponseEvent<T>) -> Unit,
+    ): RealtimeSubscription = connection.subscribe(
+        channels = channels,
+        payloadType = payloadType,
+        queries = queries,
+        callback = callback
+    )
+
+    fun <T> subscribe(
+        vararg channels: String,
+        payloadType: Class<T>,
+        queries: Set<String> = emptySet(),
+        callback: (RealtimeResponseEvent<T>) -> Unit,
+    ): RealtimeSubscription = connection.subscribe(
+        channels = channels,
+        payloadType = payloadType,
+        queries = queries,
+        callback = callback
+    )
+}
+
+internal class RealtimeConnection(private val client: Client) : CoroutineScope {
 
     private val job = Job()
 
@@ -35,20 +121,48 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
         private const val TYPE_EVENT = "event"
         private const val TYPE_PONG = "pong"
         private const val HEARTBEAT_INTERVAL = 20_000L // 20 seconds
+    }
 
-        private var socket: WebSocket? = null
-        private val activeSubscriptions = ConcurrentHashMap<String, RealtimeCallback>()
-        private val pendingSubscribes = LinkedHashMap<String, Map<String, Any>>()
-        private var pendingPresence: Map<String, Any>? = null
-        @Volatile private var appConnected = false
+    private var socket: WebSocket? = null
+    private val activeSubscriptions = ConcurrentHashMap<String, RealtimeCallback>()
+    private val pendingSubscribes = LinkedHashMap<String, Map<String, Any>>()
+    private var pendingPresence: Map<String, Any>? = null
+    @Volatile private var appConnected = false
 
-        private var reconnectAttempts = 0
-        private val socketGeneration = AtomicInteger(0)
-        private var reconnect = true
-        private var heartbeatJob: Job? = null
+    private var reconnectAttempts = 0
+    private val socketGeneration = AtomicInteger(0)
+    private var reconnect = true
+    private var heartbeatJob: Job? = null
 
-        private val subscriptionLock = Any()
-        private val presenceLock = Any()
+    private val subscriptionLock = Any()
+    private val presenceLock = Any()
+
+    private val onErrorCallbacks = CopyOnWriteArrayList<(Throwable?, Int?) -> Unit>()
+    private val onCloseCallbacks = CopyOnWriteArrayList<() -> Unit>()
+    private val onOpenCallbacks = CopyOnWriteArrayList<() -> Unit>()
+
+    fun onError(callback: (error: Throwable?, statusCode: Int?) -> Unit) {
+        onErrorCallbacks.add(callback)
+    }
+
+    fun onClose(callback: () -> Unit) {
+        onCloseCallbacks.add(callback)
+    }
+
+    fun onOpen(callback: () -> Unit) {
+        onOpenCallbacks.add(callback)
+    }
+
+    private fun dispatchError(error: Throwable?, statusCode: Int?) {
+        onErrorCallbacks.forEach { runCatching { it(error, statusCode) } }
+    }
+
+    private fun dispatchClose() {
+        onCloseCallbacks.forEach { runCatching { it() } }
+    }
+
+    private fun dispatchOpen() {
+        onOpenCallbacks.forEach { runCatching { it() } }
     }
 
     private fun createSocket() {
@@ -74,7 +188,7 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             val queryParams = "project=$encodedProject"
             val url = "${client.endpointRealtime}/realtime?$queryParams"
             val requestBuilder = Request.Builder().url(url)
-            val jwt = client.config["jwt"]
+            val jwt = client.headers["x-appwrite-jwt"]
             if (!jwt.isNullOrEmpty()) {
                 requestBuilder.addHeader("x-appwrite-jwt", jwt)
             }
@@ -144,6 +258,9 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             pendingPresence = null
         }
         appConnected = false
+        onErrorCallbacks.clear()
+        onCloseCallbacks.clear()
+        onOpenCallbacks.clear()
     }
 
     private fun sendPendingSubscribes() {
@@ -201,17 +318,6 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
         }
     }
 
-    /**
-     * Fire-and-forget presence upsert. Records the latest payload in state so
-     * that — if the WebSocket isn't open yet, or later reconnects — the most
-     * recent presence is automatically (re)sent on the next `connected` event.
-     * When the socket is already open, the frame is sent immediately.
-     *
-     * @param status Presence status (required).
-     * @param presenceId Presence ID (required).
-     * @param permissions Optional permission list to attach to the presence document.
-     * @param metadata Optional metadata payload.
-     */
     fun upsertPresence(
         status: String,
         presenceId: String,
@@ -390,6 +496,7 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             if (isStale(webSocket)) return
             reconnectAttempts = 0
             startHeartbeat()
+            dispatchOpen()
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
@@ -398,16 +505,21 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
 
             launch(IO) {
                 if (isStale(webSocket)) return@launch
-                val message = text.fromJson<RealtimeResponse>()
-                when (message.type) {
-                    TYPE_ERROR -> handleResponseError(message)
-                    TYPE_CONNECTED -> handleResponseConnected(message)
-                    TYPE_EVENT -> handleResponseEvent(message)
-                    TYPE_PONG -> {}
+                try {
+                    val message = RealtimeResponse.from(text.fromJson<Map<String, Any?>>())
+                    when (message.type) {
+                        TYPE_ERROR -> handleResponseError(message)
+                        TYPE_CONNECTED -> handleResponseConnected(message)
+                        TYPE_EVENT -> handleResponseEvent(message)
+                        TYPE_PONG -> {}
+                    }
+                } catch (e: Throwable) {
+                    val statusCode = (e as? AppwriteException)?.code
+                    dispatchError(e, statusCode)
                 }
             }
         }
-        
+
         private fun handleResponseConnected(message: RealtimeResponse) {
             if (message.data == null) return
 
@@ -420,15 +532,20 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
         }
 
         private fun handleResponseError(message: RealtimeResponse) {
-//            val ex = message.data?.jsonCast<AppwriteException>() ?: RuntimeException("Data is not present")
-//            throw ex
-            closeSocket()
+            val data = message.data as? Map<*, *> ?: throw RuntimeException("Data is not present")
+            throw AppwriteException(
+                message = data["message"] as? String,
+                code = (data["code"] as? Number)?.toInt(),
+                type = data["type"] as? String,
+                response = data["response"] as? String,
+            )
         }
 
         private suspend fun handleResponseEvent(message: RealtimeResponse) {
-            val messageData = message.data?.jsonCast<Map<String, Any>>() ?: return
-            val event = messageData.jsonCast<RealtimeResponseEvent<Any>>()
-            
+            @Suppress("UNCHECKED_CAST")
+            val messageData = message.data as? Map<String, Any> ?: return
+            val event = RealtimeResponseEvent.from(messageData) ?: return
+
             if (event.channels.isEmpty()) {
                 return
             }
@@ -455,11 +572,12 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             if (isStale(webSocket)) return
             appConnected = false
             stopHeartbeat()
-            // Release the companion ref so createSocket() (called below or by
+            // Release this client's socket ref so createSocket() (called below or by
             // a concurrent subscribe()/upsertPresence()) can open a new one.
             synchronized(subscriptionLock) {
                 if (socket === webSocket) socket = null
             }
+            dispatchClose()
             if (!reconnect || code == RealtimeCode.POLICY_VIOLATION.value) {
                 reconnect = true
                 return
@@ -468,7 +586,7 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             val timeout = getTimeout()
 
             Log.e(
-                this@Realtime::class.java.name,
+                this@RealtimeConnection::class.java.name,
                 "Realtime disconnected. Re-connecting in ${timeout / 1000} seconds.",
                 AppwriteException(reason, code)
             )
@@ -491,7 +609,7 @@ class Realtime(client: Client) : Service(client), CoroutineScope {
             synchronized(subscriptionLock) {
                 if (socket === webSocket) socket = null
             }
-            t.printStackTrace()
+            dispatchError(t, null)
         }
     }
 }

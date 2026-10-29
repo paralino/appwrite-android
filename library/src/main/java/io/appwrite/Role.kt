@@ -11,6 +11,7 @@ class Role {
          *
          * This includes authenticated and unauthenticated users.
          */
+        @JvmStatic
         fun any(): String = "any"
 
         /**
@@ -19,7 +20,9 @@ class Role {
          * You can optionally pass verified or unverified for
          * [status] to target specific types of users.
          */
-        fun user(id: String, status: String = ""): String = if(status.isEmpty()) {
+        @JvmStatic
+        @JvmOverloads
+        fun user(id: String, status: String = ""): String = if (status.isEmpty()) {
             "user:$id"
         } else {
             "user:$id/$status"
@@ -31,7 +34,9 @@ class Role {
          * You can optionally pass verified or unverified for
          * [status] to target specific types of users.
          */
-        fun users(status: String = ""): String = if(status.isEmpty()) {
+        @JvmStatic
+        @JvmOverloads
+        fun users(status: String = ""): String = if (status.isEmpty()) {
             "users"
         } else {
             "users/$status"
@@ -42,6 +47,7 @@ class Role {
          *
          * Authenticated users don't have access to this role.
          */
+        @JvmStatic
         fun guests(): String = "guests"
 
         /**
@@ -50,7 +56,9 @@ class Role {
          * You can optionally pass a role for [role] to target
          * team members with the specified role.
          */
-        fun team(id: String, role: String = ""): String = if(role.isEmpty()) {
+        @JvmStatic
+        @JvmOverloads
+        fun team(id: String, role: String = ""): String = if (role.isEmpty()) {
             "team:$id"
         } else {
             "team:$id/$role"
@@ -62,11 +70,13 @@ class Role {
          * When the member is removed from the team, they will
          * no longer have access.
          */
+        @JvmStatic
         fun member(id: String): String = "member:$id"
 
         /**
          * Grants access to a user with the specified label.
          */
+        @JvmStatic
         fun label(name: String): String = "label:$name"
     }
 }

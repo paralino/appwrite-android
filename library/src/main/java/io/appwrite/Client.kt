@@ -7,9 +7,11 @@ import io.appwrite.cookies.ListenableCookieJar
 import io.appwrite.cookies.stores.SharedPreferencesCookieStore
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.fromJson
-import io.appwrite.extensions.toJson
+import io.appwrite.extensions.toJsonRequestBody
+import io.appwrite.extensions.toJsonWithNulls
 import io.appwrite.models.InputFile
 import io.appwrite.models.UploadProgress
+import io.appwrite.services.RealtimeConnection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,11 +28,12 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 import java.io.File
-import java.io.RandomAccessFile
 import java.io.IOException
+import java.io.RandomAccessFile
 import java.lang.IllegalArgumentException
 import java.net.CookieManager
 import java.net.CookiePolicy
+import java.net.URLEncoder
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.atomic.AtomicInteger
@@ -45,19 +48,44 @@ import kotlin.coroutines.resume
 
 class Client @JvmOverloads constructor(
     context: Context,
+    @set:JvmSynthetic
     var endpoint: String = "https://cloud.appwrite.io/v1",
+    @set:JvmSynthetic
     var endpointRealtime: String? = null,
-    private var selfSigned: Boolean = false
+    private var selfSigned: Boolean = false,
+    @set:JvmSynthetic
+    var endpointPush: String? = null,
+    @set:JvmSynthetic
+    var pushClientId: String? = null
 ) : CoroutineScope {
 
     companion object {
         /**
          * The size for chunked uploads in bytes.
          */
-        internal const val CHUNK_SIZE = 5*1024*1024; // 5MB
+        internal const val CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
         internal const val MAX_CONCURRENT_UPLOADS = 8
         internal const val GLOBAL_PREFS = "io.appwrite"
         internal const val COOKIE_PREFS = "myCookie"
+
+        /**
+         * Encodes [value] as one path segment. Everything but letters, digits
+         * and -_.!~*'() is escaped, as encodeURIComponent does, so a value
+         * fills exactly the segment it replaces.
+         */
+        internal fun encodePath(value: String): String {
+            if (value == "." || value == "..") {
+                throw AppwriteException("Path parameter cannot be \".\" or \"..\"")
+            }
+            return URLEncoder
+                .encode(value, "UTF-8")
+                .replace("+", "%20")
+                .replace("%21", "!")
+                .replace("%27", "'")
+                .replace("%28", "(")
+                .replace("%29", ")")
+                .replace("%7E", "~")
+        }
     }
 
     override val coroutineContext: CoroutineContext
@@ -66,6 +94,8 @@ class Client @JvmOverloads constructor(
     private val job = Job()
 
     lateinit var http: OkHttpClient
+
+    internal val realtime by lazy { RealtimeConnection(this) }
 
     internal val headers: MutableMap<String, String>
 
@@ -94,8 +124,8 @@ class Client @JvmOverloads constructor(
             "x-sdk-name" to "Android",
             "x-sdk-platform" to "client",
             "x-sdk-language" to "android",
-            "x-sdk-version" to "25.2.0",
-            "x-appwrite-response-format" to "1.9.5"
+            "x-sdk-version" to "31.1.0",
+            "x-appwrite-response-format" to "2.6.2"
         )
         config = mutableMapOf()
 
@@ -132,6 +162,21 @@ class Client @JvmOverloads constructor(
     }
 
     /**
+     * Set Bearer
+     *
+     * The OAuth access token to authenticate with
+     *
+     * @param {string} bearer
+     *
+     * @return this
+     */
+    fun setBearer(value: String): Client {
+        config["bearer"] = value
+        addHeader("authorization", "Bearer $value")
+        return this
+    }
+
+    /**
      * Set Locale
      *
      * @param {string} locale
@@ -156,21 +201,6 @@ class Client @JvmOverloads constructor(
     fun setSession(value: String): Client {
         config["session"] = value
         addHeader("x-appwrite-session", value)
-        return this
-    }
-
-    /**
-     * Set DevKey
-     *
-     * Your secret dev API key
-     *
-     * @param {string} devkey
-     *
-     * @return this
-     */
-    fun setDevKey(value: String): Client {
-        config["devKey"] = value
-        addHeader("x-appwrite-dev-key", value)
         return this
     }
 
@@ -323,6 +353,37 @@ class Client @JvmOverloads constructor(
     }
 
     /**
+     * Set push endpoint
+     *
+     * The MQTT broker URL the [io.appwrite.services.Push] service connects to, e.g.
+     * `mqtt://host:1883` or `mqtts://host:8883`.
+     *
+     * @param endpoint
+     *
+     * @return this
+     */
+    fun setPushEndpoint(endpoint: String): Client {
+        this.endpointPush = endpoint
+        return this
+    }
+
+    /**
+     * Set push client id
+     *
+     * A stable client id for the [io.appwrite.services.Push] service. The broker keys its
+     * offline-replay cursor on this id, so pass a stable value to resume replay across
+     * restarts. Defaults to the userId decoded from the JWT (else the credential) when unset.
+     *
+     * @param pushClientId
+     *
+     * @return this
+     */
+    fun setPushClientId(pushClientId: String): Client {
+        this.pushClientId = pushClientId
+        return this
+    }
+
+    /**
      * Add Header
      *
      * @param key
@@ -380,25 +441,26 @@ class Client @JvmOverloads constructor(
     }
 
     /**
-     * Send the HTTP request
+     * Prepare the HTTP request
      *
      * @param method
      * @param path
      * @param headers
      * @param params
      *
-     * @return [T]
+     * @return [Request]
      */
     @Throws(AppwriteException::class)
-    suspend fun <T> call(
+    suspend fun prepareRequest(
         method: String,
         path: String,
-        headers:  Map<String, String> = mapOf(),
+        headers: Map<String, String> = mapOf(),
         params: Map<String, Any?> = mapOf(),
-        responseType: Class<T>,
-        converter: ((Any) -> T)? = null
-    ): T {
-        val filteredParams = params.filterValues { it != null }
+    ): Request {
+        // flatten() resolves Query/Query.Builder values before the null filter,
+        // so a builder that renders to null is dropped like any other null.
+        val flattenedParams = params.mapValues { flatten(it.value) }
+        val filteredParams = flattenedParams.filterValues { it != null }
 
         val requestHeaders = this.headers.toHeaders().newBuilder()
             .addAll(headers.toHeaders())
@@ -426,13 +488,12 @@ class Client @JvmOverloads constructor(
                     }
                 }
             }
-            val request = Request.Builder()
+
+            return Request.Builder()
                 .url(httpBuilder.build())
                 .headers(requestHeaders)
                 .get()
                 .build()
-
-            return awaitResponse(request, responseType, converter)
         }
 
         val body = if (MultipartBody.FORM.toString() == headers["content-type"]) {
@@ -440,8 +501,11 @@ class Client @JvmOverloads constructor(
 
             filteredParams.forEach {
                 when {
-                    it.key == "file" -> {
+                    it.value is MultipartBody.Part -> {
                         builder.addPart(it.value as MultipartBody.Part)
+                    }
+                    it.value is Map<*, *> -> {
+                        builder.addFormDataPart(it.key, (it.value as Map<*, *>).toJsonWithNulls())
                     }
                     it.value is List<*> -> {
                         val list = it.value as List<*>
@@ -459,17 +523,38 @@ class Client @JvmOverloads constructor(
             }
             builder.build()
         } else {
-            filteredParams
-                .toJson()
+            flattenedParams
+                .toJsonRequestBody()
                 .toRequestBody("application/json".toMediaType())
         }
 
-        val request = Request.Builder()
+        return Request.Builder()
             .url(httpBuilder.build())
             .headers(requestHeaders)
             .method(method, body)
             .build()
+    }
 
+    /**
+     * Send the HTTP request
+     *
+     * @param method
+     * @param path
+     * @param headers
+     * @param params
+     *
+     * @return [T]
+     */
+    @Throws(AppwriteException::class)
+    suspend fun <T> call(
+        method: String,
+        path: String,
+        headers: Map<String, String> = mapOf(),
+        params: Map<String, Any?> = mapOf(),
+        responseType: Class<T>,
+        converter: ((Any) -> T)? = null
+    ): T {
+        val request = prepareRequest(method, path, headers, params)
         return awaitResponse(request, responseType, converter)
     }
 
@@ -479,22 +564,34 @@ class Client @JvmOverloads constructor(
      * @param path
      * @param headers
      * @param params
+     * @param method HTTP method the upload endpoint is declared with; resuming by upload ID always uses GET
      *
      * @return [T]
      */
     @Throws(AppwriteException::class)
     suspend fun <T> chunkedUpload(
         path: String,
-        headers:  MutableMap<String, String>,
+        headers: MutableMap<String, String>,
         params: MutableMap<String, Any?>,
         responseType: Class<T>,
-        converter: ((Any) -> T),
+        converter: ((Any) -> T)? = null,
         paramName: String,
         idParamName: String? = null,
         onProgress: ((UploadProgress) -> Unit)? = null,
+        method: String = "POST",
     ): T {
+        if (params[paramName] == null) {
+            return call(
+                method = method,
+                path,
+                headers,
+                params,
+                responseType,
+                converter
+            )
+        }
         val input = params[paramName] as InputFile
-        val size: Long = when(input.sourceType) {
+        val size: Long = when (input.sourceType) {
             "path", "file" -> {
                 File(input.path).length()
             }
@@ -504,8 +601,8 @@ class Client @JvmOverloads constructor(
             else -> throw UnsupportedOperationException()
         }
 
-        if (size < CHUNK_SIZE) {
-            val data = when(input.sourceType) {
+        if (size <= CHUNK_SIZE || responseType == String::class.java) {
+            val data = when (input.sourceType) {
                 "file", "path" -> File(input.path).asRequestBody()
                 "bytes" -> (input.data as ByteArray).toRequestBody(input.mimeType.toMediaType())
                 else -> throw UnsupportedOperationException()
@@ -516,7 +613,7 @@ class Client @JvmOverloads constructor(
                 data
             )
             return call(
-                method = "POST",
+                method = method,
                 path,
                 headers,
                 params,
@@ -529,24 +626,31 @@ class Client @JvmOverloads constructor(
         var result: Map<*, *>? = null
         var uploadId: String? = null
 
-        if (idParamName?.isNotEmpty() == true) {
+        val providedUploadId = idParamName?.let { params[it]?.toString() }
+        if (!providedUploadId.isNullOrEmpty()) {
             // Make a request to check if a file already exists
-            val current = call(
-                method = "GET",
-                path = "$path/${params[idParamName]}",
-                headers = headers,
-                params = emptyMap(),
-                responseType = Map::class.java,
-            )
-            val chunksUploaded = current["chunksUploaded"] as Long
-            offset = chunksUploaded * CHUNK_SIZE
-            uploadId = params[idParamName]?.toString()
-            result = current
+            try {
+                val current = call(
+                    method = "GET",
+                    path = "$path/${encodePath(providedUploadId)}",
+                    headers = headers,
+                    params = emptyMap(),
+                    responseType = Map::class.java,
+                )
+                val chunksUploaded = current["chunksUploaded"] as Long
+                offset = chunksUploaded * CHUNK_SIZE
+                uploadId = providedUploadId
+                result = current
+            } catch (exception: AppwriteException) {
+                if (exception.code != 404) {
+                    throw exception
+                }
+            }
         }
 
         fun readChunk(start: Long, end: Long): ByteArray {
             val length = (end - start).toInt()
-            return when(input.sourceType) {
+            return when (input.sourceType) {
                 "file", "path" -> {
                     RandomAccessFile(input.path, "r").use { chunkFile ->
                         val chunk = ByteArray(length)
@@ -586,7 +690,7 @@ class Client @JvmOverloads constructor(
             )
 
             val chunkResult = call(
-                method = "POST",
+                method = method,
                 path,
                 chunkHeaders,
                 chunkParams,
@@ -669,7 +773,7 @@ class Client @JvmOverloads constructor(
             result = completedResultRef.get() ?: lastResultRef.get()
         }
 
-        return converter(result as Map<String, Any>)
+        return converter?.invoke(result as Map<String, Any>) ?: result as T
     }
 
     /**
@@ -768,5 +872,45 @@ class Client @JvmOverloads constructor(
                 )
             }
         })
+    }
+
+    fun flatten(value: Any?): Any? {
+        if (value is Query.Builder) {
+            return value.build()
+        }
+        if (value is Query) {
+            return value.toString()
+        }
+
+        val items = when (value) {
+            is Array<*> -> value.asList()
+            is Collection<*> -> value
+            else -> return value
+        }
+
+        val out = ArrayList<Any?>(items.size)
+        var changed = false
+        for (item in items) {
+            val flat = flatten(item)
+            if (item is Query.Builder || item is Query) {
+                if (flat is Collection<*>) {
+                    out.addAll(flat)
+                } else {
+                    out.add(flat)
+                }
+                changed = true
+                continue
+            }
+            if ((item is Array<*> || item is Collection<*>) && flat is Collection<*> && flat.all { it is String }) {
+                out.addAll(flat)
+                changed = true
+                continue
+            }
+            if (flat !== item) {
+                changed = true
+            }
+            out.add(flat)
+        }
+        return if (changed || value is Array<*>) out else value
     }
 }

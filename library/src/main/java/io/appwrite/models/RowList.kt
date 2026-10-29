@@ -20,7 +20,7 @@ data class RowList<T>(
     val rows: List<Row<T>>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "rows" to rows.map { it.toMap() } as Any,
     )
@@ -39,8 +39,8 @@ data class RowList<T>(
             map: Map<String, Any>,
             nestedType: Class<T>
         ) = RowList<T>(
-            total = (map["total"] as Number).toLong(),
-            rows = (map["rows"] as List<Map<String, Any>>).map { Row.from(map = it, nestedType) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            rows = ((if (map.containsKey("rows")) map["rows"] else listOf<Any?>()) as List<Map<String, Any>>).map { Row.from(map = it, nestedType) },
         )
     }
 }

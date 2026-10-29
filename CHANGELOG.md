@@ -1,5 +1,134 @@
 # Change Log
 
+## 31.1.0
+
+* Updated: requests send `x-appwrite-response-format: 2.6.2`
+* Fixed: path parameters are percent-encoded as one segment; `.` and `..` throw `AppwriteException`
+* Fixed: a chunked upload with a new file ID starts uploading instead of failing on the resume lookup
+* Fixed: chunked upload resume lookups percent-encode the file ID
+* Fixed: cookie store errors no longer log cookie values
+* Updated: README adds install instructions and explains realtime client ownership
+
+## 31.0.1
+
+* Fixed: realtime connections, subscriptions, presence and reconnect state are isolated between clients
+* Fixed: realtime wrappers sharing a client reuse its connection and keep independent cancellation scopes
+* Fixed: realtime WebSocket handshakes send the configured JWT
+* Fixed: Java and Kotlin examples omit unset optional strings instead of sending empty values, and preserve explicit `"0"` examples
+* Updated: generated API metadata and response-format header to `2.6.1`; client service signatures and model shapes are unchanged
+
+## 31.0.0
+
+* Breaking: every service method declares `@Throws(AppwriteException::class)`; Java callers must catch `AppwriteException`
+* Added: `account.listMemberships` to list the current user's team memberships
+* Added: `createQuery` on `Databases`, `DocumentsDB` and `TablesDB` to send list queries in the request body
+* Added: `bundleId` and `environment` params on `account.createPushTarget` and `updatePushTarget`
+* Added: `@JvmStatic` on `ID`, `Permission`, `Role`, `Query`, `Operator`, `Channel` and `InputFile` helpers for Java
+* Fixed: `row.data` keeps null-valued columns instead of dropping them
+* Updated: Java examples catch `AppwriteException` and import `List` and `Map`
+
+## 30.0.0
+
+* Breaking: requests send `x-appwrite-response-format: 2.5.0`; responses follow the 2.5 shapes
+* Breaking: missing response fields map to their documented defaults
+* Breaking: `oauth2` `resource` params now take `List<String>` on the authorize, PAR, device and token methods
+* Breaking: `Push.subscribe` takes `notifyInForeground` before the callback; Java callers must pass it
+* Breaking: removed the `Topic.any()` and `Topic.all()` wildcard builders and `ResolvedTopic`; `Push.subscribe` takes strings or `Topic`
+* Added: `notifyInForeground` option on `Push.subscribe`
+* Added: `PushOpenActivity` for opening notifications
+* Added: `Query` aggregates (`count`, `countDistinct`, `sum`, `avg`, `min`, `max` and more), `groupBy`, `having`, `distinct`, joins, `relationship`, `covers`, `spatialEquals` and `page`
+* Added: `Query.builder()` to chain queries; `build()` returns the query list
+* Added: `ExecutionTrigger.EMAIL`
+* Updated: `Topic.path` rejects levels containing a NUL character
+* Fixed: a file exactly `CHUNK_SIZE` bytes long uploads in a single request
+
+## 29.2.0
+
+* Added: `analytics.createEvent` in a new `Analytics` service to send tracking events
+* Added: optional `state` on `account.createOAuth2Session` and `account.createOAuth2Token`, returned unchanged on the success and failure URLs
+* Added: optional `membershipId` on `teams.createMembership`
+* Fixed: `avatars.updatePhoto` sends `PUT`, so uploading a profile photo no longer returns 404
+* Fixed: OAuth2 query parameters (`success`, `failure`, `scopes`, `state`) are URL-encoded, so values containing `&`, `+` or `#` survive the redirect
+
+## 29.1.0
+
+* Added: `account` passkey methods `listPasskeys`, `createPasskey`, `getPasskey`, `updatePasskey`, `deletePasskey` and `updatePasskeyVerification`
+* Added: `account.createPasskeyToken` and `account.updatePasskeyToken` for passkey sign-in
+* Added: `Passkey`, `PasskeyList`, `PasskeyChallenge` and `TokenSecret` models
+
+## 29.0.0
+
+* Breaking: minimum Android SDK raised from 23 to 24 (Android 7.0)
+* Added: `Push` service for MQTT push messages without FCM, plus `PushReceiver` for background handling
+* Added: `Topic` builder for push topics
+* Added: `endpointPush` and `pushClientId` on `Client`, with `setPushEndpoint` and `setPushClientId`
+* Added: `Apps` service for managing OAuth2 apps, keys, secrets and installations
+* Added: `Oauth2` service for using Appwrite as an OAuth2/OIDC provider
+* Added: `Avatars.updatePhoto` and `Avatars.deletePhoto`
+* Added: `duration` parameter to `Account.createEmailPasswordSession`
+* Added: `current` parameter to `Account.deleteSessions`
+* Added: `total` parameter to `Account.listSessions`, `Locale` list methods and `listTransactions`
+* Added: `WEBFLOW` value to `OAuthProvider`
+* Added: `toMap()` and `toJson()` on `Query` and `Operator`
+* Updated: SDK manifest merges Push permissions, a foreground service and a boot receiver into apps
+* Updated: narrower Netty keep rules, raising the R8 obfuscation and optimization scores Google Play reads
+* Updated: added the shaded `hivemq-mqtt-client` dependency for `Push`, with consumer R8 rules
+* Fixed: `Query` and `Operator` serialize correctly under R8 instead of producing `{}`
+* Fixed: Realtime delivers events and error messages under R8
+* Fixed: session cookies saved under R8 stay readable after an app update
+* Fixed: `ID.unique()` and `InputFile.fromFile` no longer crash on Android 7.x
+* Fixed: Kotlin and Java examples now compile
+* Fixed: unsubscribing one of several subscriptions on a topic stops its callback
+
+## 28.0.0
+
+* Breaking: removed `Account.listLogs` and the `Log`, `LogList` models
+* Breaking: removed `Client.setDevKey`
+* Breaking: SDK now targets Appwrite 2.3 (`x-appwrite-response-format: 2.3.0`)
+* Added: `Account.createIdTokenSession` for native Apple and Google sign-in with `IdTokenProvider` enum
+* Added: `Account.createRecoveryOTP` and `Account.updateRecoveryOTP` for code-based password recovery
+* Added: `Account.createEmailVerificationOTP` and `Account.updateEmailVerificationOTP`
+* Added: `KAKAO` and `TIKTOK` values to `OAuthProvider`
+* Added: `passwordPwned` field on `User` and `providerIdToken` field on `Identity`
+* Fixed: empty-string required path parameters are rejected instead of sent to the API
+
+## 27.2.0
+
+* Added: `DocumentsDB` and `VectorsDB` services for document and vector database access
+* Added: `userId`, `emailHash` and `name` parameters to `Avatars.getPhoto()`
+* Added: `CLOUDFLARE` and `RESEND` values to `OAuthProvider` enum
+* Added: `AUTO` value to `ImageGravity` enum
+* Fixed: `Client.setEndpoint` and `setEndpointRealtime` are fluent when called from Java
+* Updated: `x-appwrite-response-format` header to `2.0.0`
+
+## 27.1.0
+
+* Added: `Realtime.onError`, `onOpen`, and `onClose` lifecycle callbacks
+* Fixed: message-handler exceptions are delivered via `onError` instead of crashing the coroutine
+* Fixed: lifecycle callbacks are isolated per connection and cleared on disconnect
+
+## 27.0.0
+
+* Breaking: object parameters and model fields are now typed `Map<String, Any?>` instead of `Any`
+* Fixed: passing `null` in `data` now clears the attribute instead of being dropped from the request
+* Added: `account.listConsents`, `getConsent`, `deleteConsent` for OAuth2 consent management
+* Added: `account.listConsentTokens`, `getConsentToken`, `deleteConsentToken`, plus the `Oauth2ConsentToken` model
+* Added: `organization` service
+* Added: `teams.listInstallations`, `getInstallation`, `createInstallation`, `updateInstallation`, `deleteInstallation`, plus the `AppInstallation` model
+* Added: `avatars.getPhoto`
+* Added: `ExecutionResourceType` enum
+* Added: `Client.prepareRequest()` for inspecting an encoded request
+
+## 26.0.0
+
+* Breaking: raised `minSdk` from 21 to 23, dropping support for Android 5.0/5.1 (API 21-22)
+* Added: `Client.setBearer()` for OAuth access token authentication
+* Added: `Query.vectorDot()`, `Query.vectorCosine()`, `Query.vectorEuclidean()` vector similarity queries
+* Added: `appwrite` value to `OAuthProvider` enum
+* Added: geolocation and network fields (`city`, `timeZone`, `latitude`, `isp`, etc.) to `Locale` model
+* Updated: raised `compileSdk` to 37
+* Updated: upgraded dependencies (OkHttp 5.4.0, Gson 2.14.0, coroutines 1.11.0, AndroidX)
+
 ## 25.2.0
 
 * Added: Realtime connections now send an `x-appwrite-jwt` header for authentication.

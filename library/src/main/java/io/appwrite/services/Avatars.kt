@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -15,10 +15,9 @@ import java.io.File
  * The Avatars service aims to help you complete everyday tasks related to your app image, icons, and avatars.
  */
 class Avatars(client: Client) : Service(client) {
-
     /**
      * You can use this endpoint to show different browser icons to your users. The code argument receives the browser code as it appears in your user [GET /account/sessions](https://appwrite.io/docs/references/cloud/client-web/account#getSessions) endpoint. Use width, height and quality arguments to change the output settings.
-     * 
+     *
      * When one dimension is specified and the other is 0, the image is scaled with preserved aspect ratio. If both dimensions are 0, the API provides an image at source quality. If dimensions are not specified, the default size of image returned is 100x100px.
      *
      * @param code Browser Code.
@@ -28,6 +27,7 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getBrowser(
         code: io.appwrite.enums.Browser,
         width: Long? = null,
@@ -35,30 +35,31 @@ class Avatars(client: Client) : Service(client) {
         quality: Long? = null,
     ): ByteArray {
         val apiPath = ("/avatars/browsers/{code}"
-            .replace("{code}", code.value)
+            .replace("{code}", Client.encodePath(code.value))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "width" to width,
             "height" to height,
             "quality" to quality,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * The credit card endpoint will return you the icon of the credit card provider you need. Use width, height and quality arguments to change the output settings.
-     * 
+     *
      * When one dimension is specified and the other is 0, the image is scaled with preserved aspect ratio. If both dimensions are 0, the API provides an image at source quality. If dimensions are not specified, the default size of image returned is 100x100px.
-     * 
+     *
      *
      * @param code Credit Card Code. Possible values: amex, argencard, cabal, cencosud, diners, discover, elo, hipercard, jcb, mastercard, naranja, targeta-shopping, unionpay, visa, mir, maestro, rupay.
      * @param width Image width. Pass an integer between 0 to 2000. Defaults to 100.
@@ -67,6 +68,7 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getCreditCard(
         code: io.appwrite.enums.CreditCard,
         width: Long? = null,
@@ -74,58 +76,60 @@ class Avatars(client: Client) : Service(client) {
         quality: Long? = null,
     ): ByteArray {
         val apiPath = ("/avatars/credit-cards/{code}"
-            .replace("{code}", code.value)
+            .replace("{code}", Client.encodePath(code.value))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "width" to width,
             "height" to height,
             "quality" to quality,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * Use this endpoint to fetch the favorite icon (AKA favicon) of any remote website URL.
-     * 
+     *
      * This endpoint does not follow HTTP redirects.
      *
      * @param url Website URL which you want to fetch the favicon from.
      * @return [ByteArray]
      */
+    @Throws(AppwriteException::class)
     suspend fun getFavicon(
         url: String,
     ): ByteArray {
-        val apiPath = ("/avatars/favicon"
-        )
-
+        val apiPath = "/avatars/favicon"
         val apiParams = mutableMapOf<String, Any?>(
             "url" to url,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/*",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * You can use this endpoint to show different country flags icons to your users. The code argument receives the 2 letter country code. Use width, height and quality arguments to change the output settings. Country codes follow the [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) standard.
-     * 
+     *
      * When one dimension is specified and the other is 0, the image is scaled with preserved aspect ratio. If both dimensions are 0, the API provides an image at source quality. If dimensions are not specified, the default size of image returned is 100x100px.
-     * 
+     *
      *
      * @param code Country Code. ISO Alpha-2 country code format.
      * @param width Image width. Pass an integer between 0 to 2000. Defaults to 100.
@@ -134,6 +138,7 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getFlag(
         code: io.appwrite.enums.Flag,
         width: Long? = null,
@@ -141,30 +146,31 @@ class Avatars(client: Client) : Service(client) {
         quality: Long? = null,
     ): ByteArray {
         val apiPath = ("/avatars/flags/{code}"
-            .replace("{code}", code.value)
+            .replace("{code}", Client.encodePath(code.value))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "width" to width,
             "height" to height,
             "quality" to quality,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * Use this endpoint to fetch a remote image URL and crop it to any image size you want. This endpoint is very useful if you need to crop and display remote images in your app or in case you want to make sure a 3rd party image is properly served using a TLS protocol.
-     * 
+     *
      * When one dimension is specified and the other is 0, the image is scaled with preserved aspect ratio. If both dimensions are 0, the API provides an image at source quality. If dimensions are not specified, the default size of image returned is 400x400px.
-     * 
+     *
      * This endpoint does not follow HTTP redirects.
      *
      * @param url Image URL which you want to crop.
@@ -173,37 +179,38 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getImage(
         url: String,
         width: Long? = null,
         height: Long? = null,
     ): ByteArray {
-        val apiPath = ("/avatars/image"
-        )
-
+        val apiPath = "/avatars/image"
         val apiParams = mutableMapOf<String, Any?>(
             "url" to url,
             "width" to width,
             "height" to height,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/*",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * Use this endpoint to show your user initials avatar icon on your website or app. By default, this route will try to print your logged-in user name or email initials. You can also overwrite the user name if you pass the 'name' parameter. If no name is given and no user is logged, an empty avatar will be returned.
-     * 
+     *
      * You can use the color and background params to change the avatar colors. By default, a random theme will be selected. The random theme will persist for the user's initials when reloading the same theme will always return for the same initials.
-     * 
+     *
      * When one dimension is specified and the other is 0, the image is scaled with preserved aspect ratio. If both dimensions are 0, the API provides an image at source quality. If dimensions are not specified, the default size of image returned is 100x100px.
-     * 
+     *
      *
      * @param name Full Name. When empty, current user name or email will be used. Max length: 128 chars.
      * @param width Image width. Pass an integer between 0 to 2000. Defaults to 100.
@@ -212,35 +219,168 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getInitials(
         name: String? = null,
         width: Long? = null,
         height: Long? = null,
         background: String? = null,
     ): ByteArray {
-        val apiPath = ("/avatars/initials"
-        )
-
+        val apiPath = "/avatars/initials"
         val apiParams = mutableMapOf<String, Any?>(
             "name" to name,
             "width" to width,
             "height" to height,
             "background" to background,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
+    /**
+     * Returns the best available profile photo for a user. The endpoint tries each source in priority order and returns the first successful result: a custom uploaded photo (see avatars.updatePhoto), OAuth2 identity photo, Gravatar, Libravatar, Appwrite Initials, built-in static fallback.
+     *
+     * Passing `userId` — `current()` for the authenticated user — resolves the photo from everything known about that user: identity photos, email, and name. An explicit `emailHash` or `name` then overrides just that value, and the user's remaining sources stay in the chain. Without `userId`, passing `emailHash` and/or `name` resolves the avatar from those values alone: the hash is looked up on Gravatar and Libravatar, the name is rendered as initials, and the session user stays out of the chain so their own photo never shadows the avatar being asked for. When nothing is passed, the photo resolves for the currently authenticated user. Emails are only ever accepted pre-hashed, so no address ends up in a URL.
+     *
+     * @param width Output image width in pixels. Pass an integer between 0 and 2000. Defaults to 256.
+     * @param height Output image height in pixels. Pass an integer between 0 and 2000. Defaults to 256.
+     * @param quality Output image quality between 0 and 100. Defaults to 100.
+     * @param output Output image format. Defaults to 'png'.
+     * @param rating Maximum image rating to fetch from Gravatar/Libravatar. Defaults to 'g'.
+     * @param userId User ID to resolve the photo for. Pass 'current()' for the currently authenticated user. When omitted, the session user is used only if no emailHash and no name is passed.
+     * @param emailHash SHA256 hash of the lowercase, trimmed email address to look up on Gravatar and Libravatar instead of the user's own email. Pass the hash, never the address itself.
+     * @param name Name to render initials from instead of the user's own name. Max length: 128 chars.
+     * @return [ByteArray]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun getPhoto(
+        width: Long? = null,
+        height: Long? = null,
+        quality: Long? = null,
+        output: String? = null,
+        rating: String? = null,
+        userId: String? = null,
+        emailHash: String? = null,
+        name: String? = null,
+    ): ByteArray {
+        val apiPath = "/avatars/photo"
+        val apiParams = mutableMapOf<String, Any?>(
+            "width" to width,
+            "height" to height,
+            "quality" to quality,
+            "output" to output,
+            "rating" to rating,
+            "userId" to userId,
+            "emailHash" to emailHash,
+            "name" to name,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/*",
+        )
+        return client.call(
+            "GET",
+            apiPath,
+            headers = apiHeaders,
+            params = apiParams,
+            responseType = ByteArray::class.java
+        )
+    }
+
+    /**
+     * Update the profile photo of the currently authenticated user. The uploaded image takes priority over every other photo source, including OAuth2 identity photos, Gravatar, and Libravatar. Updating an already customized photo replaces it. The image must be at most 5MB and is sent in a single request.
+     *
+     * @param file Binary image file of at most 5MB. Allowed file types are png, jpg, jpeg, and webp.
+     * @return [io.appwrite.models.Account<T>]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun <T> updatePhoto(
+        file: InputFile,
+        nestedType: Class<T>,
+        onProgress: ((UploadProgress) -> Unit)? = null
+    ): io.appwrite.models.Account<T> {
+        val apiPath = "/avatars/photo"
+        val apiParams = mutableMapOf<String, Any?>(
+            "file" to file,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "multipart/form-data",
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.Account<T> = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.Account.from(map = it as Map<String, Any>, nestedType)
+        }
+        val idParamName: String? = null
+        val paramName = "file"
+        return client.chunkedUpload(
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = classOf(),
+            converter,
+            paramName = paramName,
+            idParamName = idParamName,
+            onProgress = onProgress,
+            method = "PUT",
+        )
+    }
+
+    /**
+     * Update the profile photo of the currently authenticated user. The uploaded image takes priority over every other photo source, including OAuth2 identity photos, Gravatar, and Libravatar. Updating an already customized photo replaces it. The image must be at most 5MB and is sent in a single request.
+     *
+     * @param file Binary image file of at most 5MB. Allowed file types are png, jpg, jpeg, and webp.
+     * @return [io.appwrite.models.Account<T>]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun updatePhoto(
+        file: InputFile,
+        onProgress: ((UploadProgress) -> Unit)? = null
+    ): io.appwrite.models.Account<Map<String, Any>> = updatePhoto(
+        file,
+        nestedType = classOf(),
+        onProgress = onProgress
+    )
+
+    /**
+     * Delete the profile photo of the currently authenticated user and store the built-in static placeholder in its place. The placeholder is the user's photo from then on, so it takes priority over every other photo source — OAuth2 identity photos, Gravatar, Libravatar, and initials — until a new photo is uploaded with avatars.updatePhoto.
+     *
+     * @return [Any]
+     */
+    @Throws(AppwriteException::class)
+    suspend fun deletePhoto(): Any {
+        val apiPath = "/avatars/photo"
+        val apiParams = mutableMapOf<String, Any?>()
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "application/json",
+            "accept" to "application/json",
+        )
+        return client.call(
+            "DELETE",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = Any::class.java,
+        )
+    }
 
     /**
      * Converts a given plain text to a QR code image. You can use the query parameters to change the size and style of the resulting image.
-     * 
+     *
      *
      * @param text Plain text to be converted to QR code image.
      * @param size QR code size. Pass an integer between 1 to 1000. Defaults to 400.
@@ -249,41 +389,42 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getQR(
         text: String,
         size: Long? = null,
         margin: Long? = null,
         download: Boolean? = null,
     ): ByteArray {
-        val apiPath = ("/avatars/qr"
-        )
-
+        val apiPath = "/avatars/qr"
         val apiParams = mutableMapOf<String, Any?>(
             "text" to text,
             "size" to size,
             "margin" to margin,
             "download" to download,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
 
-
     /**
      * Use this endpoint to capture a screenshot of any website URL. This endpoint uses a headless browser to render the webpage and capture it as an image.
-     * 
+     *
      * You can configure the browser viewport size, theme, user agent, geolocation, permissions, and more. Capture either just the viewport or the full page scroll.
-     * 
+     *
      * When width and height are specified, the image is resized accordingly. If both dimensions are 0, the API provides an image at original size. If dimensions are not specified, the default viewport size is 1280x720px.
      *
      * @param url Website URL which you want to capture.
-     * @param headers HTTP headers to send with the browser request. Defaults to empty.
+     * @param headers HTTP headers to send with the browser request. Only Accept and Accept-Language are allowed. Defaults to empty.
      * @param viewportWidth Browser viewport width. Pass an integer between 1 to 1920. Defaults to 1280.
      * @param viewportHeight Browser viewport height. Pass an integer between 1 to 1080. Defaults to 720.
      * @param scale Browser scale factor. Pass a number between 0.1 to 3. Defaults to 1.
@@ -305,9 +446,10 @@ class Avatars(client: Client) : Service(client) {
      * @return [ByteArray]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun getScreenshot(
         url: String,
-        headers: Any? = null,
+        headers: Map<String, Any?>? = null,
         viewportWidth: Long? = null,
         viewportHeight: Long? = null,
         scale: Double? = null,
@@ -327,9 +469,7 @@ class Avatars(client: Client) : Service(client) {
         quality: Long? = null,
         output: io.appwrite.enums.ImageFormat? = null,
     ): ByteArray {
-        val apiPath = ("/avatars/screenshots"
-        )
-
+        val apiPath = "/avatars/screenshots"
         val apiParams = mutableMapOf<String, Any?>(
             "url" to url,
             "headers" to headers,
@@ -351,16 +491,17 @@ class Avatars(client: Client) : Service(client) {
             "height" to height,
             "quality" to quality,
             "output" to output,
-            "project" to client.config["project"],
-            "impersonateuserid" to client.config["impersonateuserid"],
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "image/png",
         )
         return client.call(
             "GET",
             apiPath,
+            headers = apiHeaders,
             params = apiParams,
             responseType = ByteArray::class.java
         )
     }
-
-
 }

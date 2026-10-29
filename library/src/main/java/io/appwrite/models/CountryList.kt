@@ -20,19 +20,18 @@ data class CountryList(
     val countries: List<Country>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "countries" to countries.map { it.toMap() } as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = CountryList(
-            total = (map["total"] as Number).toLong(),
-            countries = (map["countries"] as List<Map<String, Any>>).map { Country.from(map = it) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            countries = ((if (map.containsKey("countries")) map["countries"] else listOf<Any?>()) as List<Map<String, Any>>).map { Country.from(map = it) },
         )
     }
 }

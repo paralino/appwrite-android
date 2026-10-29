@@ -14,17 +14,16 @@ data class AlgoSha(
     val type: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "type" to type as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = AlgoSha(
-            type = map["type"] as String,
+            type = (if (map.containsKey("type")) map["type"] else "sha") as String,
         )
     }
 }

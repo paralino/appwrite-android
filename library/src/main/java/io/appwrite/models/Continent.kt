@@ -20,19 +20,18 @@ data class Continent(
     val code: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "name" to name as Any,
         "code" to code as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Continent(
-            name = map["name"] as String,
-            code = map["code"] as String,
+            name = (if (map.containsKey("name")) map["name"] else "") as String,
+            code = (if (map.containsKey("code")) map["code"] else "") as String,
         )
     }
 }

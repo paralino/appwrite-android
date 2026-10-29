@@ -14,17 +14,16 @@ data class MfaRecoveryCodes(
     val recoveryCodes: List<String>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "recoveryCodes" to recoveryCodes as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = MfaRecoveryCodes(
-            recoveryCodes = map["recoveryCodes"] as List<String>,
+            recoveryCodes = (if (map.containsKey("recoveryCodes")) map["recoveryCodes"] else listOf<Any?>()) as List<String>,
         )
     }
 }

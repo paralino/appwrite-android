@@ -1,6 +1,5 @@
 package io.appwrite
 
-import java.time.Instant
 import kotlin.math.floor
 import kotlin.random.Random
 
@@ -12,8 +11,7 @@ class ID {
         // Generate an hex ID based on timestamp
         // Recreated from https://www.php.net/manual/en/function.uniqid.php
         private fun hexTimestamp(): String {
-            val now = Instant.now()
-            val sec = now.epochSecond
+            val sec = System.currentTimeMillis() / 1000
             val usec = (System.nanoTime() / 1000) % 1000
 
             val hexTimestamp = "%08x%05x".format(sec, usec)
@@ -21,15 +19,18 @@ class ID {
             return hexTimestamp
         }
 
+        @JvmStatic
         fun custom(id: String): String
             = id
 
-        /** 
+        /**
          * Generate a unique ID with padding to have a longer ID
          *
          * @param padding The number of characters to add to the ID
          * @returns The unique ID
          */
+        @JvmStatic
+        @JvmOverloads
         fun unique(padding: Int = 7): String {
             val baseId = hexTimestamp()
             val randomPadding = (1..padding)

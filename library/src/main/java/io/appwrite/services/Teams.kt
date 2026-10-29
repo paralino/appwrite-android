@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,7 +13,6 @@ import java.io.File
  * The Teams service allows you to group users of your project and to enable them to share read and write access to your project resources
  */
 class Teams(client: Client) : Service(client) {
-
     /**
      * Get a list of all the teams in which the current user is a member. You can use the parameters to filter your results.
      *
@@ -23,15 +22,14 @@ class Teams(client: Client) : Service(client) {
      * @return [io.appwrite.models.TeamList<T>]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> list(
         queries: List<String>? = null,
         search: String? = null,
         total: Boolean? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.TeamList<T> {
-        val apiPath = ("/teams"
-        )
-
+        val apiPath = "/teams"
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
             "search" to search,
@@ -81,19 +79,18 @@ class Teams(client: Client) : Service(client) {
      *
      * @param teamId Team ID. Choose a custom ID or generate a random ID with `ID.unique()`. Valid chars are a-z, A-Z, 0-9, period, hyphen, and underscore. Can't start with a special char. Max length is 36 chars.
      * @param name Team name. Max length: 128 chars.
-     * @param roles Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 32 characters long.
+     * @param roles Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 81 characters long.
      * @return [io.appwrite.models.Team<T>]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> create(
         teamId: String,
         name: String,
         roles: List<String>? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Team<T> {
-        val apiPath = ("/teams"
-        )
-
+        val apiPath = "/teams"
         val apiParams = mutableMapOf<String, Any?>(
             "teamId" to teamId,
             "name" to name,
@@ -123,7 +120,7 @@ class Teams(client: Client) : Service(client) {
      *
      * @param teamId Team ID. Choose a custom ID or generate a random ID with `ID.unique()`. Valid chars are a-z, A-Z, 0-9, period, hyphen, and underscore. Can't start with a special char. Max length is 36 chars.
      * @param name Team name. Max length: 128 chars.
-     * @param roles Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 32 characters long.
+     * @param roles Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 81 characters long.
      * @return [io.appwrite.models.Team<T>]
      */
     @JvmOverloads
@@ -145,16 +142,18 @@ class Teams(client: Client) : Service(client) {
      * @param teamId Team ID.
      * @return [io.appwrite.models.Team<T>]
      */
+    @Throws(AppwriteException::class)
     suspend fun <T> get(
         teamId: String,
         nestedType: Class<T>,
     ): io.appwrite.models.Team<T> {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -194,15 +193,18 @@ class Teams(client: Client) : Service(client) {
      * @param name New team name. Max length: 128 chars.
      * @return [io.appwrite.models.Team<T>]
      */
+    @Throws(AppwriteException::class)
     suspend fun <T> updateName(
         teamId: String,
         name: String,
         nestedType: Class<T>,
     ): io.appwrite.models.Team<T> {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "name" to name,
         )
@@ -248,18 +250,21 @@ class Teams(client: Client) : Service(client) {
      * @param teamId Team ID.
      * @return [Any]
      */
+    @Throws(AppwriteException::class)
     suspend fun delete(
         teamId: String,
     ): Any {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "content-type" to "application/json",
+            "accept" to "application/json",
         )
         return client.call(
             "DELETE",
@@ -270,6 +275,217 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
+    /**
+     * List app installations on a team. Any team member can read installations.
+     *
+     * @param teamId Team ID.
+     * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries). Maximum of 100 queries are allowed, each 4096 characters long.
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
+     * @return [io.appwrite.models.AppInstallationList]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun listInstallations(
+        teamId: String,
+        queries: List<String>? = null,
+        total: Boolean? = null,
+    ): io.appwrite.models.AppInstallationList {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        val apiPath = ("/teams/{teamId}/installations"
+            .replace("{teamId}", Client.encodePath(teamId))
+        )
+        val apiParams = mutableMapOf<String, Any?>(
+            "queries" to queries,
+            "total" to total,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.AppInstallationList = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.AppInstallationList.from(map = it as Map<String, Any>)
+        }
+        return client.call(
+            "GET",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = io.appwrite.models.AppInstallationList::class.java,
+            converter,
+        )
+    }
+
+    /**
+     * Install an app on a team. When authenticated as a user, only team members with the owner role can install apps. Requests using an API key or in admin mode can install apps on any team. The installation is granted the scopes the app currently requests.
+     *
+     * @param teamId Team ID.
+     * @param appId Application unique ID.
+     * @param authorizationDetails Authorization details granted to the installation as a JSON array of objects, each with a `type` and app-defined fields. The Appwrite Console stores authorized project IDs here.
+     * @return [io.appwrite.models.AppInstallation]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun createInstallation(
+        teamId: String,
+        appId: String,
+        authorizationDetails: String? = null,
+    ): io.appwrite.models.AppInstallation {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        val apiPath = ("/teams/{teamId}/installations"
+            .replace("{teamId}", Client.encodePath(teamId))
+        )
+        val apiParams = mutableMapOf<String, Any?>(
+            "appId" to appId,
+            "authorizationDetails" to authorizationDetails,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "application/json",
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.AppInstallation = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.AppInstallation.from(map = it as Map<String, Any>)
+        }
+        return client.call(
+            "POST",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = io.appwrite.models.AppInstallation::class.java,
+            converter,
+        )
+    }
+
+    /**
+     * Get an app installation on a team by its unique ID. Any team member can read installations.
+     *
+     * @param teamId Team ID.
+     * @param installationId Installation unique ID.
+     * @return [io.appwrite.models.AppInstallation]
+     */
+    @Throws(AppwriteException::class)
+    suspend fun getInstallation(
+        teamId: String,
+        installationId: String,
+    ): io.appwrite.models.AppInstallation {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (installationId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"installationId\"")
+        }
+        val apiPath = ("/teams/{teamId}/installations/{installationId}"
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{installationId}", Client.encodePath(installationId))
+        )
+        val apiParams = mutableMapOf<String, Any?>()
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.AppInstallation = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.AppInstallation.from(map = it as Map<String, Any>)
+        }
+        return client.call(
+            "GET",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = io.appwrite.models.AppInstallation::class.java,
+            converter,
+        )
+    }
+
+    /**
+     * Update an app installation on a team. Only team members with the owner role can update installations. The installation's granted scopes are refreshed to the scopes the app currently requests; previously issued installation access tokens are revoked.
+     *
+     * @param teamId Team ID.
+     * @param installationId Installation unique ID.
+     * @param authorizationDetails Authorization details granted to the installation as a JSON array of objects, each with a `type` and app-defined fields. Omit to keep the current value.
+     * @return [io.appwrite.models.AppInstallation]
+     */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun updateInstallation(
+        teamId: String,
+        installationId: String,
+        authorizationDetails: String? = null,
+    ): io.appwrite.models.AppInstallation {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (installationId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"installationId\"")
+        }
+        val apiPath = ("/teams/{teamId}/installations/{installationId}"
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{installationId}", Client.encodePath(installationId))
+        )
+        val apiParams = mutableMapOf<String, Any?>(
+            "authorizationDetails" to authorizationDetails,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "application/json",
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.AppInstallation = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.AppInstallation.from(map = it as Map<String, Any>)
+        }
+        return client.call(
+            "PUT",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = io.appwrite.models.AppInstallation::class.java,
+            converter,
+        )
+    }
+
+    /**
+     * Uninstall an app from a team by its installation ID. Only team members with the owner role can remove installations. Previously issued installation access tokens are revoked.
+     *
+     * @param teamId Team ID.
+     * @param installationId Installation unique ID.
+     * @return [Any]
+     */
+    @Throws(AppwriteException::class)
+    suspend fun deleteInstallation(
+        teamId: String,
+        installationId: String,
+    ): Any {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (installationId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"installationId\"")
+        }
+        val apiPath = ("/teams/{teamId}/installations/{installationId}"
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{installationId}", Client.encodePath(installationId))
+        )
+        val apiParams = mutableMapOf<String, Any?>()
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "application/json",
+            "accept" to "application/json",
+        )
+        return client.call(
+            "DELETE",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = Any::class.java,
+        )
+    }
 
     /**
      * Use this endpoint to list a team's members using the team's ID. All team members have read access to this endpoint. Hide sensitive attributes from the response by toggling membership privacy in the Console.
@@ -281,16 +497,19 @@ class Teams(client: Client) : Service(client) {
      * @return [io.appwrite.models.MembershipList]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listMemberships(
         teamId: String,
         queries: List<String>? = null,
         search: String? = null,
         total: Boolean? = null,
     ): io.appwrite.models.MembershipList {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
             "search" to search,
@@ -314,16 +533,15 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Invite a new member to join your team. Provide an ID for existing users, or invite unregistered users using an email or phone number. If initiated from a Client SDK, Appwrite will send an email or sms with a link to join the team to the invited user, and an account will be created for them if one doesn't exist. If initiated from a Server SDK, the new member will be added automatically to the team.
-     * 
+     *
      * You only need to provide one of a user ID, email, or phone number. Appwrite will prioritize accepting the user ID > email > phone number if you provide more than one of these parameters.
-     * 
-     * Use the `url` parameter to redirect the user from the invitation email to your app. After the user is redirected, use the [Update Team Membership Status](https://appwrite.io/docs/references/cloud/client-web/teams#updateMembershipStatus) endpoint to allow the user to accept the invitation to the team. 
-     * 
+     *
+     * Use the `url` parameter to redirect the user from the invitation email to your app. After the user is redirected, use the [Update Team Membership Status](https://appwrite.io/docs/references/cloud/client-web/teams#updateMembershipStatus) endpoint to allow the user to accept the invitation to the team.
+     *
      * Please note that to avoid a [Redirect Attack](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md) Appwrite will accept the only redirect URLs under the domains you have added as a platform on the Appwrite Console.
-     * 
+     *
      *
      * @param teamId Team ID.
      * @param roles Array of strings. Use this param to set the user roles in the team. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 81 characters long.
@@ -332,9 +550,11 @@ class Teams(client: Client) : Service(client) {
      * @param phone Phone number. Format this number with a leading '+' and a country code, e.g., +16175551212.
      * @param url URL to redirect the user back to your app from the invitation email. This parameter is not required when an API key is supplied. Only URLs from hostnames in your project platform list are allowed. This requirement helps to prevent an [open redirect](https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html) attack against your project API.
      * @param name Name of the new team member. Max length: 128 chars.
+     * @param membershipId Membership ID. Choose a custom ID or generate a random ID with `ID.unique()`. Valid chars are a-z, A-Z, 0-9, period, hyphen, and underscore. Can't start with a special char. Max length is 36 chars.
      * @return [io.appwrite.models.Membership]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun createMembership(
         teamId: String,
         roles: List<String>,
@@ -343,11 +563,14 @@ class Teams(client: Client) : Service(client) {
         phone: String? = null,
         url: String? = null,
         name: String? = null,
+        membershipId: String? = null,
     ): io.appwrite.models.Membership {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "email" to email,
             "userId" to userId,
@@ -355,6 +578,7 @@ class Teams(client: Client) : Service(client) {
             "roles" to roles,
             "url" to url,
             "name" to name,
+            "membershipId" to membershipId,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -375,7 +599,6 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Get a team member by the membership unique id. All team members have read access for this resource. Hide sensitive attributes from the response by toggling membership privacy in the Console.
      *
@@ -383,17 +606,22 @@ class Teams(client: Client) : Service(client) {
      * @param membershipId Membership ID.
      * @return [io.appwrite.models.Membership]
      */
+    @Throws(AppwriteException::class)
     suspend fun getMembership(
         teamId: String,
         membershipId: String,
     ): io.appwrite.models.Membership {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (membershipId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"membershipId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships/{membershipId}"
-            .replace("{teamId}", teamId)
-            .replace("{membershipId}", membershipId)
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{membershipId}", Client.encodePath(membershipId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -412,26 +640,31 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Modify the roles of a team member. Only team members with the owner role have access to this endpoint. Learn more about [roles and permissions](https://appwrite.io/docs/permissions).
-     * 
+     *
      *
      * @param teamId Team ID.
      * @param membershipId Membership ID.
      * @param roles An array of strings. Use this param to set the user's roles in the team. A role can be any string. Learn more about [roles and permissions](https://appwrite.io/docs/permissions). Maximum of 100 roles are allowed, each 81 characters long.
      * @return [io.appwrite.models.Membership]
      */
+    @Throws(AppwriteException::class)
     suspend fun updateMembership(
         teamId: String,
         membershipId: String,
         roles: List<String>,
     ): io.appwrite.models.Membership {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (membershipId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"membershipId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships/{membershipId}"
-            .replace("{teamId}", teamId)
-            .replace("{membershipId}", membershipId)
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{membershipId}", Client.encodePath(membershipId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "roles" to roles,
         )
@@ -454,7 +687,6 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * This endpoint allows a user to leave a team or for a team owner to delete the membership of any other team member. You can also use this endpoint to delete a user membership even if it is not accepted.
      *
@@ -462,20 +694,26 @@ class Teams(client: Client) : Service(client) {
      * @param membershipId Membership ID.
      * @return [Any]
      */
+    @Throws(AppwriteException::class)
     suspend fun deleteMembership(
         teamId: String,
         membershipId: String,
     ): Any {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (membershipId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"membershipId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships/{membershipId}"
-            .replace("{teamId}", teamId)
-            .replace("{membershipId}", membershipId)
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{membershipId}", Client.encodePath(membershipId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "content-type" to "application/json",
+            "accept" to "application/json",
         )
         return client.call(
             "DELETE",
@@ -486,12 +724,11 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Use this endpoint to allow a user to accept an invitation to join a team after being redirected back to your app from the invitation email received by the user.
-     * 
+     *
      * If the request is successful, a session for the user is automatically created.
-     * 
+     *
      *
      * @param teamId Team ID.
      * @param membershipId Membership ID.
@@ -499,17 +736,23 @@ class Teams(client: Client) : Service(client) {
      * @param secret Secret key.
      * @return [io.appwrite.models.Membership]
      */
+    @Throws(AppwriteException::class)
     suspend fun updateMembershipStatus(
         teamId: String,
         membershipId: String,
         userId: String,
         secret: String,
     ): io.appwrite.models.Membership {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
+        if (membershipId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"membershipId\"")
+        }
         val apiPath = ("/teams/{teamId}/memberships/{membershipId}/status"
-            .replace("{teamId}", teamId)
-            .replace("{membershipId}", membershipId)
+            .replace("{teamId}", Client.encodePath(teamId))
+            .replace("{membershipId}", Client.encodePath(membershipId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "userId" to userId,
             "secret" to secret,
@@ -533,23 +776,24 @@ class Teams(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Get the team's shared preferences by its unique ID. If a preference doesn't need to be shared by all team members, prefer storing them in [user preferences](https://appwrite.io/docs/references/cloud/client-web/account#getPrefs).
      *
      * @param teamId Team ID.
      * @return [io.appwrite.models.Preferences<T>]
      */
+    @Throws(AppwriteException::class)
     suspend fun <T> getPrefs(
         teamId: String,
         nestedType: Class<T>,
     ): io.appwrite.models.Preferences<T> {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}/prefs"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -589,15 +833,18 @@ class Teams(client: Client) : Service(client) {
      * @param prefs Prefs key-value JSON object.
      * @return [io.appwrite.models.Preferences<T>]
      */
+    @Throws(AppwriteException::class)
     suspend fun <T> updatePrefs(
         teamId: String,
-        prefs: Any,
+        prefs: Map<String, Any?>,
         nestedType: Class<T>,
     ): io.appwrite.models.Preferences<T> {
+        if (teamId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"teamId\"")
+        }
         val apiPath = ("/teams/{teamId}/prefs"
-            .replace("{teamId}", teamId)
+            .replace("{teamId}", Client.encodePath(teamId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "prefs" to prefs,
         )
@@ -630,11 +877,10 @@ class Teams(client: Client) : Service(client) {
     @Throws(AppwriteException::class)
     suspend fun updatePrefs(
         teamId: String,
-        prefs: Any,
+        prefs: Map<String, Any?>,
     ): io.appwrite.models.Preferences<Map<String, Any>> = updatePrefs(
         teamId,
         prefs,
         nestedType = classOf(),
     )
-
 }

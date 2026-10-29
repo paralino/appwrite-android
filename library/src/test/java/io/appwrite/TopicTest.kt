@@ -1,0 +1,37 @@
+package io.appwrite
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Test
+
+class TopicTest {
+    private fun assertPathFails(levels: List<String>) {
+        assertThrows(IllegalArgumentException::class.java) { Topic.path(levels) }
+        assertThrows(IllegalArgumentException::class.java) { Topic.path(listOf("user")).path(levels) }
+    }
+
+    @Test
+    fun pathJoinsLevels() {
+        assertEquals("user/123/notification", Topic.path(listOf("user", "123", "notification")).toString())
+    }
+
+    @Test
+    fun pathAppendsLevels() {
+        assertEquals(
+            "org/42/user/123/notification",
+            Topic.path(listOf("org", "42", "user", "123")).path(listOf("notification")).toString(),
+        )
+    }
+
+    @Test
+    fun pathRejectsInvalidLevels() {
+        assertPathFails(emptyList())
+        assertPathFails(listOf("user", ""))
+        assertPathFails(listOf("user/123"))
+        assertPathFails(listOf("+"))
+        assertPathFails(listOf("user", "a+b"))
+        assertPathFails(listOf("user", "#"))
+        assertPathFails(listOf("a#b"))
+        assertPathFails(listOf("user", "a\u0000b"))
+    }
+}

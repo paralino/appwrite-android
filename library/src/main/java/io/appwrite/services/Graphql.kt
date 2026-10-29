@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,19 +13,17 @@ import java.io.File
  * The GraphQL API allows you to query and mutate your Appwrite server using GraphQL.
  */
 class Graphql(client: Client) : Service(client) {
-
     /**
      * Execute a GraphQL mutation.
      *
      * @param query The query or queries to execute.
      * @return [Any]
      */
+    @Throws(AppwriteException::class)
     suspend fun query(
-        query: Any,
+        query: Map<String, Any?>,
     ): Any {
-        val apiPath = ("/graphql"
-        )
-
+        val apiPath = "/graphql"
         val apiParams = mutableMapOf<String, Any?>(
             "query" to query,
         )
@@ -47,7 +45,6 @@ class Graphql(client: Client) : Service(client) {
             converter,
         )
     }
-
 
     /**
      * Execute a GraphQL mutation.
@@ -55,12 +52,11 @@ class Graphql(client: Client) : Service(client) {
      * @param query The query or queries to execute.
      * @return [Any]
      */
+    @Throws(AppwriteException::class)
     suspend fun mutation(
-        query: Any,
+        query: Map<String, Any?>,
     ): Any {
-        val apiPath = ("/graphql/mutation"
-        )
-
+        val apiPath = "/graphql/mutation"
         val apiParams = mutableMapOf<String, Any?>(
             "query" to query,
         )
@@ -82,6 +78,4 @@ class Graphql(client: Client) : Service(client) {
             converter,
         )
     }
-
-
 }

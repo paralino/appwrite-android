@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,21 +13,17 @@ import java.io.File
  * The Locale service allows you to customize your app based on your users' location.
  */
 class Locale(client: Client) : Service(client) {
-
     /**
      * Get the current user location based on IP. Returns an object with user country code, country name, continent name, continent code, ip address and suggested currency. You can use the locale header to get the data in a supported language.
-     * 
+     *
      * ([IP Geolocation by DB-IP](https://db-ip.com))
      *
      * @return [io.appwrite.models.Locale]
      */
-    suspend fun get(
-    ): io.appwrite.models.Locale {
-        val apiPath = ("/locale"
-        )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+    @Throws(AppwriteException::class)
+    suspend fun get(): io.appwrite.models.Locale {
+        val apiPath = "/locale"
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -46,18 +42,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all locale codes in [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.LocaleCodeList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listCodes(
+        total: Boolean? = null,
     ): io.appwrite.models.LocaleCodeList {
-        val apiPath = ("/locale/codes"
-        )
-
+        val apiPath = "/locale/codes"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -77,18 +75,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all continents. You can use the locale header to get the data in a supported language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.ContinentList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listContinents(
+        total: Boolean? = null,
     ): io.appwrite.models.ContinentList {
-        val apiPath = ("/locale/continents"
-        )
-
+        val apiPath = "/locale/continents"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -108,18 +108,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all countries. You can use the locale header to get the data in a supported language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.CountryList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listCountries(
+        total: Boolean? = null,
     ): io.appwrite.models.CountryList {
-        val apiPath = ("/locale/countries"
-        )
-
+        val apiPath = "/locale/countries"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -138,19 +140,21 @@ class Locale(client: Client) : Service(client) {
             converter,
         )
     }
-
 
     /**
      * List of all countries that are currently members of the EU. You can use the locale header to get the data in a supported language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.CountryList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listCountriesEU(
+        total: Boolean? = null,
     ): io.appwrite.models.CountryList {
-        val apiPath = ("/locale/countries/eu"
-        )
-
+        val apiPath = "/locale/countries/eu"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -170,18 +174,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all countries phone codes. You can use the locale header to get the data in a supported language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.PhoneList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listCountriesPhones(
+        total: Boolean? = null,
     ): io.appwrite.models.PhoneList {
-        val apiPath = ("/locale/countries/phones"
-        )
-
+        val apiPath = "/locale/countries/phones"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -201,18 +207,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all currencies, including currency symbol, name, plural, and decimal digits for all major and minor currencies. You can use the locale header to get the data in a supported language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.CurrencyList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listCurrencies(
+        total: Boolean? = null,
     ): io.appwrite.models.CurrencyList {
-        val apiPath = ("/locale/currencies"
-        )
-
+        val apiPath = "/locale/currencies"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -232,18 +240,20 @@ class Locale(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * List of all languages classified by ISO 639-1 including 2-letter code, name in English, and name in the respective language.
      *
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.LanguageList]
      */
+    @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listLanguages(
+        total: Boolean? = null,
     ): io.appwrite.models.LanguageList {
-        val apiPath = ("/locale/languages"
-        )
-
+        val apiPath = "/locale/languages"
         val apiParams = mutableMapOf<String, Any?>(
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -262,6 +272,4 @@ class Locale(client: Client) : Service(client) {
             converter,
         )
     }
-
-
 }

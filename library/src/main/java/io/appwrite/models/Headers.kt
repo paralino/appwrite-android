@@ -20,19 +20,18 @@ data class Headers(
     val value: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "name" to name as Any,
         "value" to value as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Headers(
-            name = map["name"] as String,
-            value = map["value"] as String,
+            name = (if (map.containsKey("name")) map["name"] else "") as String,
+            value = (if (map.containsKey("value")) map["value"] else "") as String,
         )
     }
 }

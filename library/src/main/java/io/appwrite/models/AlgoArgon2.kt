@@ -32,7 +32,7 @@ data class AlgoArgon2(
     val threads: Long,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "type" to type as Any,
         "memoryCost" to memoryCost as Any,
         "timeCost" to timeCost as Any,
@@ -40,15 +40,14 @@ data class AlgoArgon2(
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = AlgoArgon2(
-            type = map["type"] as String,
-            memoryCost = (map["memoryCost"] as Number).toLong(),
-            timeCost = (map["timeCost"] as Number).toLong(),
-            threads = (map["threads"] as Number).toLong(),
+            type = (if (map.containsKey("type")) map["type"] else "argon2") as String,
+            memoryCost = ((if (map.containsKey("memoryCost")) map["memoryCost"] else 0) as Number).toLong(),
+            timeCost = ((if (map.containsKey("timeCost")) map["timeCost"] else 0) as Number).toLong(),
+            threads = ((if (map.containsKey("threads")) map["threads"] else 0) as Number).toLong(),
         )
     }
 }

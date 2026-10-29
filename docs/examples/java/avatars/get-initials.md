@@ -1,6 +1,9 @@
 ```java
+import android.util.Log;
+
 import io.appwrite.Client;
 import io.appwrite.coroutines.CoroutineCallback;
+import io.appwrite.exceptions.AppwriteException;
 import io.appwrite.services.Avatars;
 
 Client client = new Client(context)
@@ -9,19 +12,22 @@ Client client = new Client(context)
 
 Avatars avatars = new Avatars(client);
 
-avatars.getInitials(
-    "<NAME>", // name (optional)
-    0, // width (optional)
-    0, // height (optional)
-    "", // background (optional)
-    new CoroutineCallback<>((result, error) -> {
-        if (error != null) {
-            error.printStackTrace();
-            return;
-        }
+try {
+    avatars.getInitials(
+        "<NAME>", // name (optional)
+        0L, // width (optional)
+        0L, // height (optional)
+        "FFFFFF", // background (optional)
+        new CoroutineCallback<>((result, error) -> {
+            if (error != null) {
+                error.printStackTrace();
+                return;
+            }
 
-        Log.d("Appwrite", result.toString());
-    })
-);
-
+            Log.d("Appwrite", result.toString());
+        })
+    );
+} catch (AppwriteException e) {
+    e.printStackTrace();
+}
 ```

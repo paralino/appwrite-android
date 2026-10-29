@@ -38,7 +38,7 @@ data class AlgoScrypt(
     val length: Long,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "type" to type as Any,
         "costCpu" to costCpu as Any,
         "costMemory" to costMemory as Any,
@@ -47,16 +47,15 @@ data class AlgoScrypt(
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = AlgoScrypt(
-            type = map["type"] as String,
-            costCpu = (map["costCpu"] as Number).toLong(),
-            costMemory = (map["costMemory"] as Number).toLong(),
-            costParallel = (map["costParallel"] as Number).toLong(),
-            length = (map["length"] as Number).toLong(),
+            type = (if (map.containsKey("type")) map["type"] else "scrypt") as String,
+            costCpu = ((if (map.containsKey("costCpu")) map["costCpu"] else 8) as Number).toLong(),
+            costMemory = ((if (map.containsKey("costMemory")) map["costMemory"] else 14) as Number).toLong(),
+            costParallel = ((if (map.containsKey("costParallel")) map["costParallel"] else 1) as Number).toLong(),
+            length = ((if (map.containsKey("length")) map["length"] else 64) as Number).toLong(),
         )
     }
 }

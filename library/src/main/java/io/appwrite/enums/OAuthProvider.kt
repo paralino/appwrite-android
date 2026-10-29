@@ -7,6 +7,8 @@ enum class OAuthProvider(val value: String) {
     AMAZON("amazon"),
     @SerializedName("apple")
     APPLE("apple"),
+    @SerializedName("appwrite")
+    APPWRITE("appwrite"),
     @SerializedName("auth0")
     AUTH0("auth0"),
     @SerializedName("authentik")
@@ -19,6 +21,8 @@ enum class OAuthProvider(val value: String) {
     BITLY("bitly"),
     @SerializedName("box")
     BOX("box"),
+    @SerializedName("cloudflare")
+    CLOUDFLARE("cloudflare"),
     @SerializedName("dailymotion")
     DAILYMOTION("dailymotion"),
     @SerializedName("discord")
@@ -41,6 +45,10 @@ enum class OAuthProvider(val value: String) {
     GITLAB("gitlab"),
     @SerializedName("google")
     GOOGLE("google"),
+    @SerializedName("huggingface")
+    HUGGINGFACE("huggingface"),
+    @SerializedName("kakao")
+    KAKAO("kakao"),
     @SerializedName("keycloak")
     KEYCLOAK("keycloak"),
     @SerializedName("kick")
@@ -61,6 +69,8 @@ enum class OAuthProvider(val value: String) {
     PAYPALSANDBOX("paypalSandbox"),
     @SerializedName("podio")
     PODIO("podio"),
+    @SerializedName("resend")
+    RESEND("resend"),
     @SerializedName("salesforce")
     SALESFORCE("salesforce"),
     @SerializedName("slack")
@@ -69,12 +79,16 @@ enum class OAuthProvider(val value: String) {
     SPOTIFY("spotify"),
     @SerializedName("stripe")
     STRIPE("stripe"),
+    @SerializedName("tiktok")
+    TIKTOK("tiktok"),
     @SerializedName("tradeshift")
     TRADESHIFT("tradeshift"),
     @SerializedName("tradeshiftBox")
     TRADESHIFTBOX("tradeshiftBox"),
     @SerializedName("twitch")
     TWITCH("twitch"),
+    @SerializedName("webflow")
+    WEBFLOW("webflow"),
     @SerializedName("wordpress")
     WORDPRESS("wordpress"),
     @SerializedName("x")

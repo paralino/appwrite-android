@@ -62,7 +62,7 @@ data class Subscriber(
     val providerType: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "\$id" to id as Any,
         "\$createdAt" to createdAt as Any,
         "\$updatedAt" to updatedAt as Any,
@@ -75,20 +75,19 @@ data class Subscriber(
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Subscriber(
-            id = map["\$id"] as String,
-            createdAt = map["\$createdAt"] as String,
-            updatedAt = map["\$updatedAt"] as String,
-            targetId = map["targetId"] as String,
+            id = (if (map.containsKey("\$id")) map["\$id"] else "") as String,
+            createdAt = (if (map.containsKey("\$createdAt")) map["\$createdAt"] else "") as String,
+            updatedAt = (if (map.containsKey("\$updatedAt")) map["\$updatedAt"] else "") as String,
+            targetId = (if (map.containsKey("targetId")) map["targetId"] else "") as String,
             target = Target.from(map = map["target"] as Map<String, Any>),
-            userId = map["userId"] as String,
-            userName = map["userName"] as String,
-            topicId = map["topicId"] as String,
-            providerType = map["providerType"] as String,
+            userId = (if (map.containsKey("userId")) map["userId"] else "") as String,
+            userName = (if (map.containsKey("userName")) map["userName"] else "") as String,
+            topicId = (if (map.containsKey("topicId")) map["topicId"] else "") as String,
+            providerType = (if (map.containsKey("providerType")) map["providerType"] else "") as String,
         )
     }
 }

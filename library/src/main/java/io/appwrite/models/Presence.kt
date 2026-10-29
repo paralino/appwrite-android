@@ -59,36 +59,35 @@ data class Presence(
      * Presence metadata.
      */
     @SerializedName("metadata")
-    var metadata: Any?,
+    var metadata: Map<String, Any?>?,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "\$id" to id as Any,
         "\$createdAt" to createdAt as Any,
         "\$updatedAt" to updatedAt as Any,
         "\$permissions" to permissions as Any,
         "userId" to userId as Any,
-        "status" to status as Any,
+        "status" to status as Any?,
         "source" to source as Any,
-        "expiresAt" to expiresAt as Any,
-        "metadata" to metadata as Any,
+        "expiresAt" to expiresAt as Any?,
+        "metadata" to metadata as Any?,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Presence(
-            id = map["\$id"] as String,
-            createdAt = map["\$createdAt"] as String,
-            updatedAt = map["\$updatedAt"] as String,
-            permissions = map["\$permissions"] as List<String>,
-            userId = map["userId"] as String,
+            id = (if (map.containsKey("\$id")) map["\$id"] else "") as String,
+            createdAt = (if (map.containsKey("\$createdAt")) map["\$createdAt"] else "") as String,
+            updatedAt = (if (map.containsKey("\$updatedAt")) map["\$updatedAt"] else "") as String,
+            permissions = (if (map.containsKey("\$permissions")) map["\$permissions"] else listOf<Any?>()) as List<String>,
+            userId = (if (map.containsKey("userId")) map["userId"] else "") as String,
             status = map["status"] as? String,
-            source = map["source"] as String,
+            source = (if (map.containsKey("source")) map["source"] else "") as String,
             expiresAt = map["expiresAt"] as? String,
-            metadata = map["metadata"] as? Any,
+            metadata = map["metadata"] as? Map<String, Any?>,
         )
     }
 }

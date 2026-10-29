@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,11 +13,11 @@ import java.io.File
  * The Databases service allows you to create structured collections of documents, query and filter lists of documents
  */
 class Databases(client: Client) : Service(client) {
-
     /**
      * List transactions across all databases.
      *
      * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries).
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
      * @return [io.appwrite.models.TransactionList]
      */
     @Deprecated(
@@ -25,14 +25,15 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.listTransactions")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listTransactions(
         queries: List<String>? = null,
+        total: Boolean? = null,
     ): io.appwrite.models.TransactionList {
-        val apiPath = ("/databases/transactions"
-        )
-
+        val apiPath = "/databases/transactions"
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
+            "total" to total,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
@@ -52,7 +53,6 @@ class Databases(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Create a new transaction.
      *
@@ -64,12 +64,11 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.createTransaction")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun createTransaction(
         ttl: Long? = null,
     ): io.appwrite.models.Transaction {
-        val apiPath = ("/databases/transactions"
-        )
-
+        val apiPath = "/databases/transactions"
         val apiParams = mutableMapOf<String, Any?>(
             "ttl" to ttl,
         )
@@ -92,7 +91,6 @@ class Databases(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Get a transaction by its unique ID.
      *
@@ -103,15 +101,17 @@ class Databases(client: Client) : Service(client) {
         message = "This API has been deprecated since 1.8.0. Please use `TablesDB.getTransaction` instead.",
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.getTransaction")
     )
+    @Throws(AppwriteException::class)
     suspend fun getTransaction(
         transactionId: String,
     ): io.appwrite.models.Transaction {
+        if (transactionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"transactionId\"")
+        }
         val apiPath = ("/databases/transactions/{transactionId}"
-            .replace("{transactionId}", transactionId)
+            .replace("{transactionId}", Client.encodePath(transactionId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -130,7 +130,6 @@ class Databases(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Update a transaction, to either commit or roll back its operations.
      *
@@ -144,15 +143,18 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.updateTransaction")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun updateTransaction(
         transactionId: String,
         commit: Boolean? = null,
         rollback: Boolean? = null,
     ): io.appwrite.models.Transaction {
+        if (transactionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"transactionId\"")
+        }
         val apiPath = ("/databases/transactions/{transactionId}"
-            .replace("{transactionId}", transactionId)
+            .replace("{transactionId}", Client.encodePath(transactionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "commit" to commit,
             "rollback" to rollback,
@@ -176,7 +178,6 @@ class Databases(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Delete a transaction by its unique ID.
      *
@@ -187,18 +188,21 @@ class Databases(client: Client) : Service(client) {
         message = "This API has been deprecated since 1.8.0. Please use `TablesDB.deleteTransaction` instead.",
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.deleteTransaction")
     )
+    @Throws(AppwriteException::class)
     suspend fun deleteTransaction(
         transactionId: String,
     ): Any {
+        if (transactionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"transactionId\"")
+        }
         val apiPath = ("/databases/transactions/{transactionId}"
-            .replace("{transactionId}", transactionId)
+            .replace("{transactionId}", Client.encodePath(transactionId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "content-type" to "application/json",
+            "accept" to "application/json",
         )
         return client.call(
             "DELETE",
@@ -208,7 +212,6 @@ class Databases(client: Client) : Service(client) {
             responseType = Any::class.java,
         )
     }
-
 
     /**
      * Create multiple operations in a single transaction.
@@ -222,14 +225,17 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.createOperations")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun createOperations(
         transactionId: String,
-        operations: List<Any>? = null,
+        operations: List<Map<String, Any?>>? = null,
     ): io.appwrite.models.Transaction {
+        if (transactionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"transactionId\"")
+        }
         val apiPath = ("/databases/transactions/{transactionId}/operations"
-            .replace("{transactionId}", transactionId)
+            .replace("{transactionId}", Client.encodePath(transactionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "operations" to operations,
         )
@@ -252,16 +258,17 @@ class Databases(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Get a list of all the user's documents in a given collection. You can use the query params to filter your results.
+     *
+     * Documents returned by aggregate, groupBy or distinct queries hold only the attributes they select, group or aggregate, typed as a document types them, with a joined attribute named by its join alias (`alias.attribute`). The response omits their `$id`, `$sequence`, `$createdAt`, `$updatedAt`, `$permissions`, `$databaseId` and `$collectionId` unless they select or group it, and those of a right or full join document that no document of this collection matched. SDK document models fill omitted system attributes with empty values.
      *
      * @param databaseId Database ID.
      * @param collectionId Collection ID. You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/databases#databasesCreateCollection).
      * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries). Maximum of 100 queries are allowed, each 4096 characters long.
      * @param transactionId Transaction ID to read uncommitted changes within the transaction.
      * @param total When set to false, the total count returned will be 0 and will not be calculated.
-     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Must be between 0 and 86400 (24 hours).
+     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Lists with join queries are not cached. Must be between 0 and 86400 (24 hours).
      * @return [io.appwrite.models.DocumentList<T>]
      */
     @Deprecated(
@@ -269,6 +276,7 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.listRows")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> listDocuments(
         databaseId: String,
         collectionId: String,
@@ -278,11 +286,16 @@ class Databases(client: Client) : Service(client) {
         ttl: Long? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.DocumentList<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
             "transactionId" to transactionId,
@@ -310,12 +323,14 @@ class Databases(client: Client) : Service(client) {
     /**
      * Get a list of all the user's documents in a given collection. You can use the query params to filter your results.
      *
+     * Documents returned by aggregate, groupBy or distinct queries hold only the attributes they select, group or aggregate, typed as a document types them, with a joined attribute named by its join alias (`alias.attribute`). The response omits their `$id`, `$sequence`, `$createdAt`, `$updatedAt`, `$permissions`, `$databaseId` and `$collectionId` unless they select or group it, and those of a right or full join document that no document of this collection matched. SDK document models fill omitted system attributes with empty values.
+     *
      * @param databaseId Database ID.
      * @param collectionId Collection ID. You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/databases#databasesCreateCollection).
      * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries). Maximum of 100 queries are allowed, each 4096 characters long.
      * @param transactionId Transaction ID to read uncommitted changes within the transaction.
      * @param total When set to false, the total count returned will be 0 and will not be calculated.
-     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Must be between 0 and 86400 (24 hours).
+     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Lists with join queries are not cached. Must be between 0 and 86400 (24 hours).
      * @return [io.appwrite.models.DocumentList<T>]
      */
     @Deprecated(
@@ -357,20 +372,26 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.createRow")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> createDocument(
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any,
+        data: Map<String, Any?>,
         permissions: List<String>? = null,
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "documentId" to documentId,
             "data" to data,
@@ -417,7 +438,7 @@ class Databases(client: Client) : Service(client) {
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any,
+        data: Map<String, Any?>,
         permissions: List<String>? = null,
         transactionId: String? = null,
     ): io.appwrite.models.Document<Map<String, Any>> = createDocument(
@@ -427,6 +448,103 @@ class Databases(client: Client) : Service(client) {
         data,
         permissions,
         transactionId,
+        nestedType = classOf(),
+    )
+
+    /**
+     * Get a list of all the user's documents in a given collection using a POST request. This behaves identically to the list documents endpoint but accepts the queries in the request body, allowing much larger `queries` arrays than can fit in a URL query string.
+     *
+     *
+     * @param databaseId Database ID.
+     * @param collectionId Collection ID. You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/databases#databasesCreateCollection).
+     * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries). Maximum of 100 queries are allowed, each 4096 characters long.
+     * @param transactionId Transaction ID to read uncommitted changes within the transaction.
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
+     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Lists with join queries are not cached. Must be between 0 and 86400 (24 hours).
+     * @return [io.appwrite.models.DocumentList<T>]
+     */
+    @Deprecated(
+        message = "This API has been deprecated since 1.8.0. Please use `TablesDB.createQuery` instead.",
+        replaceWith = ReplaceWith("io.appwrite.services.TablesDB.createQuery")
+    )
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun <T> createQuery(
+        databaseId: String,
+        collectionId: String,
+        queries: List<String>? = null,
+        transactionId: String? = null,
+        total: Boolean? = null,
+        ttl: Long? = null,
+        nestedType: Class<T>,
+    ): io.appwrite.models.DocumentList<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/query"
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+        )
+        val apiParams = mutableMapOf<String, Any?>(
+            "queries" to queries,
+            "transactionId" to transactionId,
+            "total" to total,
+            "ttl" to ttl,
+        )
+        val apiHeaders = mutableMapOf<String, String>(
+            "X-Appwrite-Project" to client.config["project"].orEmpty(),
+            "content-type" to "application/json",
+            "accept" to "application/json",
+        )
+        val converter: (Any) -> io.appwrite.models.DocumentList<T> = {
+            @Suppress("UNCHECKED_CAST")
+            io.appwrite.models.DocumentList.from(map = it as Map<String, Any>, nestedType)
+        }
+        return client.call(
+            "POST",
+            apiPath,
+            apiHeaders,
+            apiParams,
+            responseType = classOf(),
+            converter,
+        )
+    }
+
+    /**
+     * Get a list of all the user's documents in a given collection using a POST request. This behaves identically to the list documents endpoint but accepts the queries in the request body, allowing much larger `queries` arrays than can fit in a URL query string.
+     *
+     *
+     * @param databaseId Database ID.
+     * @param collectionId Collection ID. You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/databases#databasesCreateCollection).
+     * @param queries Array of query strings generated using the Query class provided by the SDK. [Learn more about queries](https://appwrite.io/docs/queries). Maximum of 100 queries are allowed, each 4096 characters long.
+     * @param transactionId Transaction ID to read uncommitted changes within the transaction.
+     * @param total When set to false, the total count returned will be 0 and will not be calculated.
+     * @param ttl TTL (seconds) for caching list responses. Responses are stored in an in-memory key-value cache, keyed per project, collection, schema version (attributes and indexes), caller authorization roles, and the exact query — so users with different permissions never share cached entries. Schema changes invalidate cached entries automatically; document writes do not, so choose a TTL you are comfortable serving as stale data. Set to 0 to disable caching. Lists with join queries are not cached. Must be between 0 and 86400 (24 hours).
+     * @return [io.appwrite.models.DocumentList<T>]
+     */
+    @Deprecated(
+        message = "This API has been deprecated since 1.8.0. Please use `TablesDB.createQuery` instead.",
+        replaceWith = ReplaceWith("io.appwrite.services.TablesDB.createQuery")
+    )
+    @JvmOverloads
+    @Throws(AppwriteException::class)
+    suspend fun createQuery(
+        databaseId: String,
+        collectionId: String,
+        queries: List<String>? = null,
+        transactionId: String? = null,
+        total: Boolean? = null,
+        ttl: Long? = null,
+    ): io.appwrite.models.DocumentList<Map<String, Any>> = createQuery(
+        databaseId,
+        collectionId,
+        queries,
+        transactionId,
+        total,
+        ttl,
         nestedType = classOf(),
     )
 
@@ -445,6 +563,7 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.getRow")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> getDocument(
         databaseId: String,
         collectionId: String,
@@ -453,12 +572,20 @@ class Databases(client: Client) : Service(client) {
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
             "transactionId" to transactionId,
@@ -528,21 +655,30 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.upsertRow")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> upsertDocument(
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any? = null,
+        data: Map<String, Any?>? = null,
         permissions: List<String>? = null,
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "data" to data,
             "permissions" to permissions,
@@ -588,7 +724,7 @@ class Databases(client: Client) : Service(client) {
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any? = null,
+        data: Map<String, Any?>? = null,
         permissions: List<String>? = null,
         transactionId: String? = null,
     ): io.appwrite.models.Document<Map<String, Any>> = upsertDocument(
@@ -617,21 +753,30 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.updateRow")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> updateDocument(
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any? = null,
+        data: Map<String, Any?>? = null,
         permissions: List<String>? = null,
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "data" to data,
             "permissions" to permissions,
@@ -677,7 +822,7 @@ class Databases(client: Client) : Service(client) {
         databaseId: String,
         collectionId: String,
         documentId: String,
-        data: Any? = null,
+        data: Map<String, Any?>? = null,
         permissions: List<String>? = null,
         transactionId: String? = null,
     ): io.appwrite.models.Document<Map<String, Any>> = updateDocument(
@@ -704,24 +849,34 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.deleteRow")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun deleteDocument(
         databaseId: String,
         collectionId: String,
         documentId: String,
         transactionId: String? = null,
     ): Any {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "transactionId" to transactionId,
         )
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "content-type" to "application/json",
+            "accept" to "application/json",
         )
         return client.call(
             "DELETE",
@@ -731,7 +886,6 @@ class Databases(client: Client) : Service(client) {
             responseType = Any::class.java,
         )
     }
-
 
     /**
      * Decrement a specific attribute of a document by a given value.
@@ -750,6 +904,7 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.decrementRowColumn")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> decrementDocumentAttribute(
         databaseId: String,
         collectionId: String,
@@ -760,13 +915,24 @@ class Databases(client: Client) : Service(client) {
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
+        if (attribute.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"attribute\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}/{attribute}/decrement"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
-            .replace("{attribute}", attribute)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
+            .replace("{attribute}", Client.encodePath(attribute))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "value" to value,
             "min" to min,
@@ -845,6 +1011,7 @@ class Databases(client: Client) : Service(client) {
         replaceWith = ReplaceWith("io.appwrite.services.TablesDB.incrementRowColumn")
     )
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun <T> incrementDocumentAttribute(
         databaseId: String,
         collectionId: String,
@@ -855,13 +1022,24 @@ class Databases(client: Client) : Service(client) {
         transactionId: String? = null,
         nestedType: Class<T>,
     ): io.appwrite.models.Document<T> {
+        if (databaseId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"databaseId\"")
+        }
+        if (collectionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"collectionId\"")
+        }
+        if (documentId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"documentId\"")
+        }
+        if (attribute.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"attribute\"")
+        }
         val apiPath = ("/databases/{databaseId}/collections/{collectionId}/documents/{documentId}/{attribute}/increment"
-            .replace("{databaseId}", databaseId)
-            .replace("{collectionId}", collectionId)
-            .replace("{documentId}", documentId)
-            .replace("{attribute}", attribute)
+            .replace("{databaseId}", Client.encodePath(databaseId))
+            .replace("{collectionId}", Client.encodePath(collectionId))
+            .replace("{documentId}", Client.encodePath(documentId))
+            .replace("{attribute}", Client.encodePath(attribute))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "value" to value,
             "max" to max,
@@ -922,5 +1100,4 @@ class Databases(client: Client) : Service(client) {
         transactionId,
         nestedType = classOf(),
     )
-
 }

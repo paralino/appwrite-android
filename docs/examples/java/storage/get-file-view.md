@@ -1,6 +1,9 @@
 ```java
+import android.util.Log;
+
 import io.appwrite.Client;
 import io.appwrite.coroutines.CoroutineCallback;
+import io.appwrite.exceptions.AppwriteException;
 import io.appwrite.services.Storage;
 
 Client client = new Client(context)
@@ -9,18 +12,21 @@ Client client = new Client(context)
 
 Storage storage = new Storage(client);
 
-storage.getFileView(
-    "<BUCKET_ID>", // bucketId 
-    "<FILE_ID>", // fileId 
-    "<TOKEN>", // token (optional)
-    new CoroutineCallback<>((result, error) -> {
-        if (error != null) {
-            error.printStackTrace();
-            return;
-        }
+try {
+    storage.getFileView(
+        "<BUCKET_ID>", // bucketId
+        "<FILE_ID>", // fileId
+        "<TOKEN>", // token (optional)
+        new CoroutineCallback<>((result, error) -> {
+            if (error != null) {
+                error.printStackTrace();
+                return;
+            }
 
-        Log.d("Appwrite", result.toString());
-    })
-);
-
+            Log.d("Appwrite", result.toString());
+        })
+    );
+} catch (AppwriteException e) {
+    e.printStackTrace();
+}
 ```

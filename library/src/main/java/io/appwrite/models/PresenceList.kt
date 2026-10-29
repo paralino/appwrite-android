@@ -20,19 +20,18 @@ data class PresenceList(
     val presences: List<Presence>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "presences" to presences.map { it.toMap() } as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = PresenceList(
-            total = (map["total"] as Number).toLong(),
-            presences = (map["presences"] as List<Map<String, Any>>).map { Presence.from(map = it) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            presences = ((if (map.containsKey("presences")) map["presences"] else listOf<Any?>()) as List<Map<String, Any>>).map { Presence.from(map = it) },
         )
     }
 }

@@ -10,8 +10,29 @@ val gson: Gson = GsonBuilder()
     .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
     .create()
 
+/**
+ * Request-body Gson. Default Gson omits nulls, which would drop keys the
+ * caller set to null inside nested maps such as `data`. Appwrite PATCH/upsert
+ * treats a missing key as "leave unchanged", so those nulls must be encoded.
+ */
+val requestGson: Gson = GsonBuilder()
+    .serializeNulls()
+    .setNumberToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+    .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+    .create()
+
 fun Any.toJson(): String =
     gson.toJson(this)
+
+fun Any.toJsonWithNulls(): String =
+    requestGson.toJson(this)
+
+/**
+ * JSON request body: omit top-level keys the caller did not pass (optional
+ * method params default to null), but keep explicit nulls in nested maps.
+ */
+fun Map<String, Any?>.toJsonRequestBody(): String =
+    filterValues { it != null }.toJsonWithNulls()
 
 fun <T> String.fromJson(clazz: Class<T>): T =
     gson.fromJson(this, clazz)
@@ -20,10 +41,10 @@ inline fun <reified T> String.fromJson(): T =
     gson.fromJson(this, T::class.java)
 
 fun <T> Any.jsonCast(to: Class<T>): T =
-    toJson().fromJson(to)
+    toJsonWithNulls().fromJson(to)
 
 inline fun <reified T> Any.jsonCast(): T =
-    toJson().fromJson(T::class.java)
+    toJsonWithNulls().fromJson(T::class.java)
 
 fun <T> Any.tryJsonCast(to: Class<T>): T? = try {
     toJson().fromJson(to)

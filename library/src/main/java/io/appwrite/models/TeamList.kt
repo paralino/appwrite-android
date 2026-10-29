@@ -20,7 +20,7 @@ data class TeamList<T>(
     val teams: List<Team<T>>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "teams" to teams.map { it.toMap() } as Any,
     )
@@ -39,8 +39,8 @@ data class TeamList<T>(
             map: Map<String, Any>,
             nestedType: Class<T>
         ) = TeamList<T>(
-            total = (map["total"] as Number).toLong(),
-            teams = (map["teams"] as List<Map<String, Any>>).map { Team.from(map = it, nestedType) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            teams = ((if (map.containsKey("teams")) map["teams"] else listOf<Any?>()) as List<Map<String, Any>>).map { Team.from(map = it, nestedType) },
         )
     }
 }

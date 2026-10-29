@@ -62,33 +62,32 @@ data class Target(
     val expired: Boolean,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "\$id" to id as Any,
         "\$createdAt" to createdAt as Any,
         "\$updatedAt" to updatedAt as Any,
         "name" to name as Any,
         "userId" to userId as Any,
-        "providerId" to providerId as Any,
+        "providerId" to providerId as Any?,
         "providerType" to providerType as Any,
         "identifier" to identifier as Any,
         "expired" to expired as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Target(
-            id = map["\$id"] as String,
-            createdAt = map["\$createdAt"] as String,
-            updatedAt = map["\$updatedAt"] as String,
-            name = map["name"] as String,
-            userId = map["userId"] as String,
+            id = (if (map.containsKey("\$id")) map["\$id"] else "") as String,
+            createdAt = (if (map.containsKey("\$createdAt")) map["\$createdAt"] else "") as String,
+            updatedAt = (if (map.containsKey("\$updatedAt")) map["\$updatedAt"] else "") as String,
+            name = (if (map.containsKey("name")) map["name"] else "") as String,
+            userId = (if (map.containsKey("userId")) map["userId"] else "") as String,
             providerId = map["providerId"] as? String,
-            providerType = map["providerType"] as String,
-            identifier = map["identifier"] as String,
-            expired = map["expired"] as Boolean,
+            providerType = (if (map.containsKey("providerType")) map["providerType"] else "") as String,
+            identifier = (if (map.containsKey("identifier")) map["identifier"] else "") as String,
+            expired = (if (map.containsKey("expired")) map["expired"] else false) as Boolean,
         )
     }
 }

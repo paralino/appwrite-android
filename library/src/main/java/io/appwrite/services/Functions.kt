@@ -3,9 +3,9 @@ package io.appwrite.services
 import android.net.Uri
 import io.appwrite.Client
 import io.appwrite.Service
-import io.appwrite.models.*
 import io.appwrite.exceptions.AppwriteException
 import io.appwrite.extensions.classOf
+import io.appwrite.models.*
 import okhttp3.Cookie
 import java.io.File
 
@@ -13,7 +13,6 @@ import java.io.File
  * The Functions Service allows you view, create and manage your Cloud Functions.
  */
 class Functions(client: Client) : Service(client) {
-
     /**
      * Get a list of all the current user function execution logs. You can use the query params to filter your results.
      *
@@ -23,15 +22,18 @@ class Functions(client: Client) : Service(client) {
      * @return [io.appwrite.models.ExecutionList]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun listExecutions(
         functionId: String,
         queries: List<String>? = null,
         total: Boolean? = null,
     ): io.appwrite.models.ExecutionList {
+        if (functionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"functionId\"")
+        }
         val apiPath = ("/functions/{functionId}/executions"
-            .replace("{functionId}", functionId)
+            .replace("{functionId}", Client.encodePath(functionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "queries" to queries,
             "total" to total,
@@ -54,7 +56,6 @@ class Functions(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Trigger a function execution. The returned object will return you the current execution status. You can ping the `Get Execution` endpoint to get updates on the current execution status. Once this endpoint is called, your function execution process will start asynchronously.
      *
@@ -68,19 +69,22 @@ class Functions(client: Client) : Service(client) {
      * @return [io.appwrite.models.Execution]
      */
     @JvmOverloads
+    @Throws(AppwriteException::class)
     suspend fun createExecution(
         functionId: String,
         body: String? = null,
         async: Boolean? = null,
         path: String? = null,
         method: io.appwrite.enums.ExecutionMethod? = null,
-        headers: Any? = null,
+        headers: Map<String, Any?>? = null,
         scheduledAt: String? = null,
     ): io.appwrite.models.Execution {
+        if (functionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"functionId\"")
+        }
         val apiPath = ("/functions/{functionId}/executions"
-            .replace("{functionId}", functionId)
+            .replace("{functionId}", Client.encodePath(functionId))
         )
-
         val apiParams = mutableMapOf<String, Any?>(
             "body" to body,
             "async" to async,
@@ -108,7 +112,6 @@ class Functions(client: Client) : Service(client) {
         )
     }
 
-
     /**
      * Get a function execution log by its unique ID.
      *
@@ -116,17 +119,22 @@ class Functions(client: Client) : Service(client) {
      * @param executionId Execution ID.
      * @return [io.appwrite.models.Execution]
      */
+    @Throws(AppwriteException::class)
     suspend fun getExecution(
         functionId: String,
         executionId: String,
     ): io.appwrite.models.Execution {
+        if (functionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"functionId\"")
+        }
+        if (executionId.isEmpty()) {
+            throw AppwriteException("Missing required parameter: \"executionId\"")
+        }
         val apiPath = ("/functions/{functionId}/executions/{executionId}"
-            .replace("{functionId}", functionId)
-            .replace("{executionId}", executionId)
+            .replace("{functionId}", Client.encodePath(functionId))
+            .replace("{executionId}", Client.encodePath(executionId))
         )
-
-        val apiParams = mutableMapOf<String, Any?>(
-        )
+        val apiParams = mutableMapOf<String, Any?>()
         val apiHeaders = mutableMapOf<String, String>(
             "X-Appwrite-Project" to client.config["project"].orEmpty(),
             "accept" to "application/json",
@@ -144,6 +152,4 @@ class Functions(client: Client) : Service(client) {
             converter,
         )
     }
-
-
 }

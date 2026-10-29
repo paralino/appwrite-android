@@ -20,19 +20,18 @@ data class FileList(
     val files: List<File>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "files" to files.map { it.toMap() } as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = FileList(
-            total = (map["total"] as Number).toLong(),
-            files = (map["files"] as List<Map<String, Any>>).map { File.from(map = it) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            files = ((if (map.containsKey("files")) map["files"] else listOf<Any?>()) as List<Map<String, Any>>).map { File.from(map = it) },
         )
     }
 }

@@ -1,6 +1,9 @@
 ```java
+import android.util.Log;
+
 import io.appwrite.Client;
 import io.appwrite.coroutines.CoroutineCallback;
+import io.appwrite.exceptions.AppwriteException;
 import io.appwrite.services.Storage;
 import io.appwrite.enums.ImageGravity;
 import io.appwrite.enums.ImageFormat;
@@ -11,29 +14,32 @@ Client client = new Client(context)
 
 Storage storage = new Storage(client);
 
-storage.getFilePreview(
-    "<BUCKET_ID>", // bucketId 
-    "<FILE_ID>", // fileId 
-    0, // width (optional)
-    0, // height (optional)
-    ImageGravity.CENTER, // gravity (optional)
-    -1, // quality (optional)
-    0, // borderWidth (optional)
-    "", // borderColor (optional)
-    0, // borderRadius (optional)
-    0, // opacity (optional)
-    -360, // rotation (optional)
-    "", // background (optional)
-    ImageFormat.JPG, // output (optional)
-    "<TOKEN>", // token (optional)
-    new CoroutineCallback<>((result, error) -> {
-        if (error != null) {
-            error.printStackTrace();
-            return;
-        }
+try {
+    storage.getFilePreview(
+        "<BUCKET_ID>", // bucketId
+        "<FILE_ID>", // fileId
+        0L, // width (optional)
+        0L, // height (optional)
+        ImageGravity.AUTO, // gravity (optional)
+        -1L, // quality (optional)
+        0L, // borderWidth (optional)
+        "FFFFFF", // borderColor (optional)
+        0L, // borderRadius (optional)
+        0.0, // opacity (optional)
+        -360L, // rotation (optional)
+        "FFFFFF", // background (optional)
+        ImageFormat.JPG, // output (optional)
+        "<TOKEN>", // token (optional)
+        new CoroutineCallback<>((result, error) -> {
+            if (error != null) {
+                error.printStackTrace();
+                return;
+            }
 
-        Log.d("Appwrite", result.toString());
-    })
-);
-
+            Log.d("Appwrite", result.toString());
+        })
+    );
+} catch (AppwriteException e) {
+    e.printStackTrace();
+}
 ```

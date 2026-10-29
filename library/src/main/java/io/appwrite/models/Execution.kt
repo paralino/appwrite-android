@@ -1,9 +1,10 @@
 package io.appwrite.models
 
 import com.google.gson.annotations.SerializedName
-import io.appwrite.extensions.jsonCast
+import io.appwrite.enums.ExecutionResourceType
 import io.appwrite.enums.ExecutionTrigger
 import io.appwrite.enums.ExecutionStatus
+import io.appwrite.extensions.jsonCast
 
 /**
  * Execution
@@ -34,25 +35,31 @@ data class Execution(
     val permissions: List<String>,
 
     /**
-     * Function ID.
+     * Function or site ID.
      */
-    @SerializedName("functionId")
-    val functionId: String,
+    @SerializedName("resourceId")
+    val resourceId: String,
 
     /**
-     * Function's deployment ID used to create the execution.
+     * Execution resource type.
+     */
+    @SerializedName("resourceType")
+    val resourceType: ExecutionResourceType,
+
+    /**
+     * Deployment ID used to create the execution.
      */
     @SerializedName("deploymentId")
     val deploymentId: String,
 
     /**
-     * The trigger that caused the function to execute. Possible values can be: `http`, `schedule`, or `event`.
+     * The trigger that caused the resource to execute. Possible values can be: `http`, `schedule`, `event`, or `email`.
      */
     @SerializedName("trigger")
     val trigger: ExecutionTrigger,
 
     /**
-     * The status of the function execution. Possible values can be: `waiting`, `processing`, `completed`, `failed`, or `scheduled`.
+     * The status of the resource execution. Possible values can be: `waiting`, `processing`, `completed`, `failed`, or `scheduled`.
      */
     @SerializedName("status")
     val status: ExecutionStatus,
@@ -94,19 +101,19 @@ data class Execution(
     val responseHeaders: List<Headers>,
 
     /**
-     * Function logs. Includes the last 4,000 characters. This will return an empty string unless the response is returned using an API key or as part of a webhook payload.
+     * Resource logs. Includes the last 4,000 characters. This will return an empty string unless the response is returned using an API key or as part of a webhook payload.
      */
     @SerializedName("logs")
     val logs: String,
 
     /**
-     * Function errors. Includes the last 4,000 characters. This will return an empty string unless the response is returned using an API key or as part of a webhook payload.
+     * Resource errors. Includes the last 4,000 characters. This will return an empty string unless the response is returned using an API key or as part of a webhook payload.
      */
     @SerializedName("errors")
     val errors: String,
 
     /**
-     * Resource(function/site) execution duration in seconds.
+     * Total time the resource(function/site) took to respond, in seconds.
      */
     @SerializedName("duration")
     val duration: Double,
@@ -118,12 +125,13 @@ data class Execution(
     var scheduledAt: String?,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "\$id" to id as Any,
         "\$createdAt" to createdAt as Any,
         "\$updatedAt" to updatedAt as Any,
         "\$permissions" to permissions as Any,
-        "functionId" to functionId as Any,
+        "resourceId" to resourceId as Any,
+        "resourceType" to resourceType.value as Any,
         "deploymentId" to deploymentId as Any,
         "trigger" to trigger.value as Any,
         "status" to status.value as Any,
@@ -136,32 +144,32 @@ data class Execution(
         "logs" to logs as Any,
         "errors" to errors as Any,
         "duration" to duration as Any,
-        "scheduledAt" to scheduledAt as Any,
+        "scheduledAt" to scheduledAt as Any?,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Execution(
-            id = map["\$id"] as String,
-            createdAt = map["\$createdAt"] as String,
-            updatedAt = map["\$updatedAt"] as String,
-            permissions = map["\$permissions"] as List<String>,
-            functionId = map["functionId"] as String,
-            deploymentId = map["deploymentId"] as String,
+            id = (if (map.containsKey("\$id")) map["\$id"] else "") as String,
+            createdAt = (if (map.containsKey("\$createdAt")) map["\$createdAt"] else "") as String,
+            updatedAt = (if (map.containsKey("\$updatedAt")) map["\$updatedAt"] else "") as String,
+            permissions = (if (map.containsKey("\$permissions")) map["\$permissions"] else listOf<Any?>()) as List<String>,
+            resourceId = (if (map.containsKey("resourceId")) map["resourceId"] else "") as String,
+            resourceType = ExecutionResourceType.values().find { it.value == (if (map.containsKey("resourceType")) map["resourceType"] else "functions") as String }!!,
+            deploymentId = (if (map.containsKey("deploymentId")) map["deploymentId"] else "") as String,
             trigger = ExecutionTrigger.values().find { it.value == map["trigger"] as String }!!,
             status = ExecutionStatus.values().find { it.value == map["status"] as String }!!,
-            requestMethod = map["requestMethod"] as String,
-            requestPath = map["requestPath"] as String,
-            requestHeaders = (map["requestHeaders"] as List<Map<String, Any>>).map { Headers.from(map = it) },
-            responseStatusCode = (map["responseStatusCode"] as Number).toLong(),
-            responseBody = map["responseBody"] as String,
-            responseHeaders = (map["responseHeaders"] as List<Map<String, Any>>).map { Headers.from(map = it) },
-            logs = map["logs"] as String,
-            errors = map["errors"] as String,
-            duration = (map["duration"] as Number).toDouble(),
+            requestMethod = (if (map.containsKey("requestMethod")) map["requestMethod"] else "") as String,
+            requestPath = (if (map.containsKey("requestPath")) map["requestPath"] else "") as String,
+            requestHeaders = ((if (map.containsKey("requestHeaders")) map["requestHeaders"] else listOf<Any?>()) as List<Map<String, Any>>).map { Headers.from(map = it) },
+            responseStatusCode = ((if (map.containsKey("responseStatusCode")) map["responseStatusCode"] else 0) as Number).toLong(),
+            responseBody = (if (map.containsKey("responseBody")) map["responseBody"] else "") as String,
+            responseHeaders = ((if (map.containsKey("responseHeaders")) map["responseHeaders"] else listOf<Any?>()) as List<Map<String, Any>>).map { Headers.from(map = it) },
+            logs = (if (map.containsKey("logs")) map["logs"] else "") as String,
+            errors = (if (map.containsKey("errors")) map["errors"] else "") as String,
+            duration = ((if (map.containsKey("duration")) map["duration"] else 0.0) as Number).toDouble(),
             scheduledAt = map["scheduledAt"] as? String,
         )
     }

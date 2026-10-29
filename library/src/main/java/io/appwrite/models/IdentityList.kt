@@ -20,19 +20,18 @@ data class IdentityList(
     val identities: List<Identity>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "identities" to identities.map { it.toMap() } as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = IdentityList(
-            total = (map["total"] as Number).toLong(),
-            identities = (map["identities"] as List<Map<String, Any>>).map { Identity.from(map = it) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            identities = ((if (map.containsKey("identities")) map["identities"] else listOf<Any?>()) as List<Map<String, Any>>).map { Identity.from(map = it) },
         )
     }
 }

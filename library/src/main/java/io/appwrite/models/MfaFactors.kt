@@ -31,24 +31,31 @@ data class MfaFactors(
     @SerializedName("recoveryCode")
     val recoveryCode: Boolean,
 
+    /**
+     * Can custom factor be used for MFA challenge for this account.
+     */
+    @SerializedName("custom")
+    val custom: Boolean,
+
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "totp" to totp as Any,
         "phone" to phone as Any,
         "email" to email as Any,
         "recoveryCode" to recoveryCode as Any,
+        "custom" to custom as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = MfaFactors(
-            totp = map["totp"] as Boolean,
-            phone = map["phone"] as Boolean,
-            email = map["email"] as Boolean,
-            recoveryCode = map["recoveryCode"] as Boolean,
+            totp = (if (map.containsKey("totp")) map["totp"] else false) as Boolean,
+            phone = (if (map.containsKey("phone")) map["phone"] else false) as Boolean,
+            email = (if (map.containsKey("email")) map["email"] else false) as Boolean,
+            recoveryCode = (if (map.containsKey("recoveryCode")) map["recoveryCode"] else false) as Boolean,
+            custom = (if (map.containsKey("custom")) map["custom"] else false) as Boolean,
         )
     }
 }

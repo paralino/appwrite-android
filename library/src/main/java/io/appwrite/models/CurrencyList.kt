@@ -20,19 +20,18 @@ data class CurrencyList(
     val currencies: List<Currency>,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "total" to total as Any,
         "currencies" to currencies.map { it.toMap() } as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = CurrencyList(
-            total = (map["total"] as Number).toLong(),
-            currencies = (map["currencies"] as List<Map<String, Any>>).map { Currency.from(map = it) },
+            total = ((if (map.containsKey("total")) map["total"] else 0) as Number).toLong(),
+            currencies = ((if (map.containsKey("currencies")) map["currencies"] else listOf<Any?>()) as List<Map<String, Any>>).map { Currency.from(map = it) },
         )
     }
 }

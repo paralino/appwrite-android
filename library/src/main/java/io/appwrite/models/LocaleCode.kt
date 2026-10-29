@@ -20,19 +20,18 @@ data class LocaleCode(
     val name: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "code" to code as Any,
         "name" to name as Any,
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = LocaleCode(
-            code = map["code"] as String,
-            name = map["name"] as String,
+            code = (if (map.containsKey("code")) map["code"] else "") as String,
+            name = (if (map.containsKey("name")) map["name"] else "") as String,
         )
     }
 }

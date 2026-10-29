@@ -44,7 +44,7 @@ data class Token(
     val phrase: String,
 
 ) {
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "\$id" to id as Any,
         "\$createdAt" to createdAt as Any,
         "userId" to userId as Any,
@@ -54,17 +54,16 @@ data class Token(
     )
 
     companion object {
-
         @Suppress("UNCHECKED_CAST")
         fun from(
             map: Map<String, Any>,
         ) = Token(
-            id = map["\$id"] as String,
-            createdAt = map["\$createdAt"] as String,
-            userId = map["userId"] as String,
-            secret = map["secret"] as String,
-            expire = map["expire"] as String,
-            phrase = map["phrase"] as String,
+            id = (if (map.containsKey("\$id")) map["\$id"] else "") as String,
+            createdAt = (if (map.containsKey("\$createdAt")) map["\$createdAt"] else "") as String,
+            userId = (if (map.containsKey("userId")) map["userId"] else "") as String,
+            secret = (if (map.containsKey("secret")) map["secret"] else "") as String,
+            expire = (if (map.containsKey("expire")) map["expire"] else "") as String,
+            phrase = (if (map.containsKey("phrase")) map["phrase"] else "") as String,
         )
     }
 }

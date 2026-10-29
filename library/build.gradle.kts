@@ -39,16 +39,18 @@ extra["signing.secretKeyRingFile"] = signingSecretKeyRingFile.ifEmpty { localPro
 android {
     namespace = publishGroupId
 
-    compileSdk = 36
+    compileSdk = 37
 
     buildFeatures {
         buildConfig = true
     }
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 24
         buildConfigField("String", "SDK_VERSION", "\"$publishVersion\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Push: R8 rules for the bundled MQTT client, applied to consuming apps.
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -77,25 +79,26 @@ android {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
-    api("com.squareup.okhttp3:okhttp:5.3.2")
-    implementation("com.google.code.gson:gson:2.11.0")
+    api("com.squareup.okhttp3:okhttp:5.5.1")
+    implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.hivemq:hivemq-mqtt-client-shaded:1.4.1")
 
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-common-java8:2.8.7")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.fragment:fragment-ktx:1.8.5")
-    implementation("androidx.activity:activity-ktx:1.9.3")
-    implementation("androidx.browser:browser:1.8.0")
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.11.0")
+    implementation("androidx.appcompat:appcompat:1.8.0")
+    implementation("androidx.fragment:fragment-ktx:1.9.1")
+    implementation("androidx.activity:activity-ktx:1.13.0")
+    implementation("androidx.browser:browser:1.10.0")
+    implementation("androidx.core:core-ktx:1.19.1")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("androidx.test.ext:junit-ktx:1.2.1")
-    testImplementation("androidx.test:core-ktx:1.6.1")
-    testImplementation("org.robolectric:robolectric:4.16.1")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation("androidx.test.ext:junit-ktx:1.3.0")
+    testImplementation("androidx.test:core-ktx:1.7.0")
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 
 afterEvaluate {
